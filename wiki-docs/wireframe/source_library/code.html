@@ -1,0 +1,472 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Folio - All Sources</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-surface": "#283044",
+                      "on-primary-fixed-variant": "#003dab",
+                      "surface-container": "#eaedff",
+                      "on-tertiary": "#ffffff",
+                      "inverse-primary": "#b5c4ff",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed-dim": "#c4c7c9",
+                      "surface-container-low": "#f2f3ff",
+                      "primary-fixed": "#dbe1ff",
+                      "on-secondary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "on-secondary-fixed-variant": "#3a485b",
+                      "on-error": "#ffffff",
+                      "error": "#ba1a1a",
+                      "outline-variant": "#c3c5d7",
+                      "secondary-fixed-dim": "#b9c7df",
+                      "tertiary-container": "#5f6264",
+                      "primary-fixed-dim": "#b5c4ff",
+                      "on-tertiary-container": "#dbdee0",
+                      "surface-container-highest": "#dae2fd",
+                      "surface-variant": "#dae2fd",
+                      "on-tertiary-fixed-variant": "#444749",
+                      "surface-dim": "#d2d9f4",
+                      "primary-container": "#1a56db",
+                      "secondary-fixed": "#d5e3fc",
+                      "surface": "#faf8ff",
+                      "secondary": "#515f74",
+                      "background": "#faf8ff",
+                      "surface-bright": "#faf8ff",
+                      "on-secondary-fixed": "#0d1c2e",
+                      "on-surface": "#131b2e",
+                      "primary": "#003fb1",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-container": "#57657a",
+                      "on-primary-container": "#d4dcff",
+                      "secondary-container": "#d5e3fc",
+                      "outline": "#737686",
+                      "surface-tint": "#1353d8",
+                      "on-primary": "#ffffff",
+                      "on-background": "#131b2e",
+                      "inverse-on-surface": "#eef0ff",
+                      "surface-container-high": "#e2e7ff",
+                      "on-primary-fixed": "#00174d",
+                      "on-surface-variant": "#434654",
+                      "on-tertiary-fixed": "#191c1e",
+                      "tertiary-fixed": "#e0e3e5",
+                      "tertiary": "#474a4c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin-desktop": "64px",
+                      "gutter": "24px",
+                      "margin-mobile": "16px",
+                      "margin-tablet": "32px",
+                      "unit": "8px",
+                      "container-max-width": "1280px"
+              },
+              "fontFamily": {
+                      "label-md": [
+                              "JetBrains Mono"
+                      ],
+                      "label-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "14px",
+                                      "letterSpacing": "0.04em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen">
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline">
+<div class="flex items-center gap-gutter">
+<div class="text-headline-md font-headline-md font-bold text-primary dark:text-on-primary-fixed">
+                Folio
+            </div>
+<div class="hidden md:flex items-center ml-8 gap-6">
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-inverse-primary transition-colors text-label-md font-label-md" href="#">Workspace</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-inverse-primary transition-colors text-label-md font-label-md" href="#">Notebook</a>
+<a class="text-primary dark:text-inverse-primary border-b-2 border-primary dark:border-inverse-primary pb-1 text-label-md font-label-md" href="#">Library</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-1.5 rounded bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary-container text-body-sm font-body-sm w-64 placeholder:text-outline transition-shadow" placeholder="Search..." type="text">
+</div>
+<button class="bg-primary text-on-primary px-4 py-1.5 rounded-lg text-label-md font-label-md hover:bg-surface-tint transition-colors">
+                New Project
+            </button>
+<div class="flex items-center gap-2 text-secondary">
+<button class="p-2 hover:bg-surface-container-highest rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 hover:bg-surface-container-highest rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<img alt="Researcher Profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover ml-2" data-alt="A close up, professional portrait of a researcher in a bright, modern light-mode library setting. Neutral colors, calm atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBa-8L-ZPgjwtGhWwWSzpsfejBJkY7T3aMfS8VBcgBGXPPWqW2wnR6QSKsqaRJ1xKrSJlyv6gq7BTsNJMoahLovI8ZxAX-I97L2paMz3iRUyKFGDeffgz-p7MOGgCnSWTW4H1LZ22MhpWPpS6DJd57jdZHM9k9BA5_uSRXNYlFV30LU_SvLTorFpk6IwI_9SIi3kRwnSAlICxPxk1Pl_356d-isvs-0ysAGpcmlbvdT_FsmKkcPYts">
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col py-4 space-y-2 bg-surface-container-low dark:bg-inverse-surface border-r border-outline-variant dark:border-outline fixed left-0 top-16 h-[calc(100vh-64px)] w-[280px] z-40 overflow-y-auto">
+<div class="px-6 pb-6 pt-2">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-xl bg-primary-container text-primary flex items-center justify-center">
+<span class="material-symbols-outlined fill" data-icon="folder_open">folder_open</span>
+</div>
+<div>
+<h2 class="text-label-md font-label-md font-black text-on-surface dark:text-on-surface-variant">Project Alpha</h2>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Deep Work Mode</p>
+</div>
+</div>
+<button class="w-full border border-outline-variant bg-surface-container-lowest text-on-surface hover:border-primary hover:text-primary rounded-lg py-2 px-4 flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+<span class="text-label-md font-label-md">Add Source</span>
+</button>
+</div>
+<nav class="flex-1 px-2 space-y-1">
+<a class="bg-primary-container dark:bg-on-primary-fixed-variant text-on-primary-container dark:text-primary-fixed rounded-lg mx-2 px-4 py-3 flex items-center gap-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined fill" data-icon="library_books">library_books</span>
+<span class="text-label-md font-label-md">All Sources</span>
+</a>
+<a class="text-on-surface-variant dark:text-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg flex items-center gap-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="format_quote">format_quote</span>
+<span class="text-label-md font-label-md">Citations</span>
+</a>
+<a class="text-on-surface-variant dark:text-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg flex items-center gap-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span class="text-label-md font-label-md">Knowledge Assistant</span>
+</a>
+<a class="text-on-surface-variant dark:text-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg flex items-center gap-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="sticky_note_2">sticky_note_2</span>
+<span class="text-label-md font-label-md">Saved Notes</span>
+</a>
+<a class="text-on-surface-variant dark:text-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg flex items-center gap-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="edit_note">edit_note</span>
+<span class="text-label-md font-label-md">Drafts</span>
+</a>
+</nav>
+<div class="px-2 pt-4 border-t border-outline-variant mt-auto space-y-1">
+<a class="text-on-surface-variant dark:text-surface-variant mx-2 px-4 py-2 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span class="text-label-md font-label-md">Help</span>
+</a>
+<a class="text-on-surface-variant dark:text-surface-variant mx-2 px-4 py-2 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+<span class="text-label-md font-label-md">Trash</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-12 md:pl-[280px] min-h-screen">
+<div class="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop">
+<!-- Page Header -->
+<header class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 border-b border-outline-variant pb-6">
+<div>
+<h1 class="text-display font-display text-on-surface mb-2">Source Library</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant">142 items indexed across 4 categories.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<select class="appearance-none bg-surface-container-lowest border border-outline-variant text-on-surface text-label-md font-label-md rounded py-2 pl-4 pr-10 focus:border-primary focus:ring-2 focus:ring-primary-container outline-none cursor-pointer">
+<option>Recently Added</option>
+<option>Title (A-Z)</option>
+<option>Author</option>
+<option>Year</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline" data-icon="arrow_drop_down">arrow_drop_down</span>
+</div>
+<div class="flex border border-outline-variant rounded bg-surface-container-lowest overflow-hidden">
+<button class="p-2 bg-surface-container-highest text-primary hover:bg-surface-variant transition-colors" title="Grid View">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors" title="List View">
+<span class="material-symbols-outlined" data-icon="view_list">view_list</span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex flex-col lg:flex-row gap-8">
+<!-- Filters Panel -->
+<div class="w-full lg:w-64 flex-shrink-0 space-y-8">
+<div>
+<h3 class="text-label-md font-label-md text-on-surface uppercase tracking-wider mb-4">Categories</h3>
+<ul class="space-y-2">
+<li>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
+<span class="text-body-sm font-body-sm text-on-surface group-hover:text-primary transition-colors">Academic Papers</span>
+<span class="ml-auto text-label-sm font-label-sm text-outline bg-surface-container-high px-2 py-0.5 rounded-full">84</span>
+</label>
+</li>
+<li>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
+<span class="text-body-sm font-body-sm text-on-surface group-hover:text-primary transition-colors">Articles &amp; News</span>
+<span class="ml-auto text-label-sm font-label-sm text-outline bg-surface-container-high px-2 py-0.5 rounded-full">32</span>
+</label>
+</li>
+<li>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
+<span class="text-body-sm font-body-sm text-on-surface group-hover:text-primary transition-colors">Books / Chapters</span>
+<span class="ml-auto text-label-sm font-label-sm text-outline bg-surface-container-high px-2 py-0.5 rounded-full">14</span>
+</label>
+</li>
+<li>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
+<span class="text-body-sm font-body-sm text-on-surface group-hover:text-primary transition-colors">Datasets</span>
+<span class="ml-auto text-label-sm font-label-sm text-outline bg-surface-container-high px-2 py-0.5 rounded-full">12</span>
+</label>
+</li>
+</ul>
+</div>
+<div>
+<h3 class="text-label-md font-label-md text-on-surface uppercase tracking-wider mb-4">Tags</h3>
+<div class="flex flex-wrap gap-2">
+<button class="text-label-sm font-label-sm bg-primary-container text-on-primary-container px-3 py-1 rounded-full transition-colors border border-transparent">Machine Learning</button>
+<button class="text-label-sm font-label-sm bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full hover:bg-surface-variant transition-colors border border-outline-variant">Cognitive Science</button>
+<button class="text-label-sm font-label-sm bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full hover:bg-surface-variant transition-colors border border-outline-variant">UI/UX</button>
+<button class="text-label-sm font-label-sm bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full hover:bg-surface-variant transition-colors border border-outline-variant">Methodology</button>
+<button class="text-label-sm font-label-sm bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full hover:bg-surface-variant transition-colors border border-outline-variant">Ethics</button>
+</div>
+</div>
+</div>
+<!-- Bento Grid Content -->
+<div class="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<!-- Source Card 1 -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col hover:shadow-[0_4px_12px_rgba(15,23,42,0.08)] transition-all duration-300 relative group">
+<div class="absolute top-0 left-0 w-full h-1 bg-primary rounded-t-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="inline-flex items-center gap-1 text-label-sm font-label-sm text-primary bg-primary-fixed px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[14px]" data-icon="picture_as_pdf">picture_as_pdf</span>
+                                PDF
+                            </span>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<h2 class="text-headline-md font-headline-md text-on-surface mb-2 leading-snug line-clamp-2">Attention Is All You Need</h2>
+<p class="text-label-md font-label-md text-secondary mb-4">Vaswani et al. • 2017</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant mb-6 flex-1 line-clamp-3">
+                            The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder. We propose a new simple network architecture, the Transformer...
+                        </p>
+<div class="mt-auto flex items-center justify-between border-t border-outline-variant pt-4">
+<div class="flex gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container mt-1"></span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Read (100%)</span>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="bookmark_added">bookmark_added</span>
+</div>
+</article>
+<!-- Source Card 2 -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col hover:shadow-[0_4px_12px_rgba(15,23,42,0.08)] transition-all duration-300 relative group">
+<div class="flex justify-between items-start mb-4">
+<span class="inline-flex items-center gap-1 text-label-sm font-label-sm text-secondary bg-surface-container-highest px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[14px]" data-icon="article">article</span>
+                                Web Article
+                            </span>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<h2 class="text-headline-md font-headline-md text-on-surface mb-2 leading-snug line-clamp-2">Designing for Cognitive Ease in Academic Tools</h2>
+<p class="text-label-md font-label-md text-secondary mb-4">Norman, D. • 2023</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant mb-6 flex-1 line-clamp-3">
+                            An exploration into how interface complexity impacts the reading comprehension and synthesis speed of post-graduate researchers. Findings suggest minimal ornamentation reduces cognitive load significantly during deep work phases.
+                        </p>
+<div class="mt-auto flex items-center justify-between border-t border-outline-variant pt-4">
+<div class="flex gap-2">
+<span class="w-2 h-2 rounded-full bg-outline-variant mt-1"></span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Unread</span>
+</div>
+<span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors" data-icon="bookmark_add">bookmark_add</span>
+</div>
+</article>
+<!-- Source Card 3 (Image Cover Style) -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:shadow-[0_4px_12px_rgba(15,23,42,0.08)] transition-all duration-300 relative group xl:col-span-1 md:col-span-2 lg:col-span-1">
+<div class="h-32 bg-surface-container-high relative overflow-hidden">
+<div class="bg-cover bg-center w-full h-full opacity-60 mix-blend-multiply" data-alt="A macro shot of a complex neural network diagram printed on high quality matte paper, illuminated by cool, crisp, modern light-mode studio lighting. Academic, precise, focused." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBZSOVLSV0nN2D9ek_ixAAaAY4H9bIKO2Cgmn4i0vSVIWAw1b3q4pkoz7gYNOBumNYE5fdzONrAsGN675rAc9HuFNW0uRMIiI6wyJDmPpH-XJs--OQACsElWaOnqh5IDH8Wv24-lOaby_kzj60CI6w-WICWlPg4o_8GvxGnuvBvZ9NVQHrFS_sD33gQiunBqgD8EswlQJgXJjLfYLxeqAiOBNwnAHk6G-vf65VEbcvRYyVB4WP406w')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest to-transparent"></div>
+<span class="absolute top-4 left-4 inline-flex items-center gap-1 text-label-sm font-label-sm text-primary bg-primary-fixed px-2 py-1 rounded shadow-sm">
+<span class="material-symbols-outlined text-[14px]" data-icon="book">book</span>
+                                Book Chapter
+                            </span>
+</div>
+<div class="p-6 flex-1 flex flex-col z-10 -mt-6">
+<h2 class="text-headline-md font-headline-md text-on-surface mb-2 leading-snug line-clamp-2">Deep Learning: Foundations and Concepts</h2>
+<p class="text-label-md font-label-md text-secondary mb-4">Bishop, C. • 2024</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant mb-6 flex-1 line-clamp-3">
+                                Chapter 4 focuses on optimization techniques for deep neural networks, detailing gradient descent variants and their practical applications in large-scale model training environments.
+                            </p>
+<div class="mt-auto flex items-center justify-between border-t border-outline-variant pt-4">
+<div class="flex items-center gap-2 w-full max-w-[120px]">
+<div class="h-1 bg-surface-container-high w-full rounded overflow-hidden">
+<div class="h-full bg-primary w-2/3"></div>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">65%</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Citation Block Style -->
+<article class="bg-surface-container-lowest border border-outline-variant border-l-4 border-l-primary rounded-xl p-6 flex flex-col hover:shadow-[0_4px_12px_rgba(15,23,42,0.08)] transition-all duration-300 md:col-span-2 xl:col-span-2">
+<div class="flex justify-between items-start mb-2">
+<span class="text-label-sm font-label-sm text-primary uppercase tracking-wider">Direct Citation Extract</span>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="open_in_new">open_in_new</span>
+</button>
+</div>
+<h2 class="text-headline-md font-headline-md text-on-surface mb-2 leading-snug">Language Models are Few-Shot Learners</h2>
+<p class="text-label-md font-label-md text-secondary mb-4">Brown et al. • 2020 • Pg 14</p>
+<div class="bg-surface-container-low p-4 rounded border border-outline-variant mb-4">
+<p class="text-body-lg font-body-lg text-on-surface italic border-l-2 border-outline pl-4">
+                                "Here we show that scaling up language models greatly improves task-agnostic, few-shot performance, sometimes even reaching competitiveness with prior state-of-the-art fine-tuning approaches."
+                            </p>
+</div>
+<div class="flex gap-2">
+<span class="text-label-sm font-label-sm bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full border border-outline-variant">LLMs</span>
+<span class="text-label-sm font-label-sm bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full border border-outline-variant">Scaling Laws</span>
+</div>
+</article>
+<!-- Source Card 5 -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col hover:shadow-[0_4px_12px_rgba(15,23,42,0.08)] transition-all duration-300">
+<div class="flex justify-between items-start mb-4">
+<span class="inline-flex items-center gap-1 text-label-sm font-label-sm text-secondary bg-surface-container-highest px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[14px]" data-icon="dataset">dataset</span>
+                                Dataset
+                            </span>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<h2 class="text-headline-md font-headline-md text-on-surface mb-2 leading-snug line-clamp-2">ImageNet Large Scale Visual Recognition Challenge</h2>
+<p class="text-label-md font-label-md text-secondary mb-4">Russakovsky et al. • 2015</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant mb-6 flex-1 line-clamp-3">
+                            The ImageNet Large Scale Visual Recognition Challenge is a benchmark in object category classification and detection on hundreds of object categories and millions of images...
+                        </p>
+<div class="mt-auto flex items-center justify-between border-t border-outline-variant pt-4">
+<div class="flex gap-2">
+<span class="w-2 h-2 rounded-full bg-outline-variant mt-1"></span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Not Started</span>
+</div>
+</div>
+</article>
+</div>
+</div>
+</div>
+</main>
+</body></html>

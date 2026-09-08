@@ -1,0 +1,9 @@
+{
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  // Compiles nothing (`files: []`); `paths` is here only so tools that read the
+  // solution file rather than the referenced ones can resolve `@`. Without it the
+  // shadcn CLI writes generated components to a literal `@/` folder. Keep in sync
+  // with tsconfig.app.json, which is what actually type-checks `src`.
+  "compilerOptions": { "paths": { "@/*": ["./src/*"] } }
+}

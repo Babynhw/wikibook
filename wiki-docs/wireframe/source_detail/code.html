@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Einstein - Document Viewer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#5f6264",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "tertiary-fixed-dim": "#c4c7c9",
+                    "inverse-surface": "#283044",
+                    "outline": "#737686",
+                    "on-secondary": "#ffffff",
+                    "surface-container-low": "#f2f3ff",
+                    "background": "#faf8ff",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#b5c4ff",
+                    "surface-container-highest": "#dae2fd",
+                    "secondary-fixed": "#d5e3fc",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed-variant": "#003dab",
+                    "on-secondary-container": "#57657a",
+                    "tertiary-fixed": "#e0e3e5",
+                    "error-container": "#ffdad6",
+                    "on-error": "#ffffff",
+                    "tertiary": "#474a4c",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "inverse-on-surface": "#eef0ff",
+                    "outline-variant": "#c3c5d7",
+                    "on-error-container": "#93000a",
+                    "surface-container-high": "#e2e7ff",
+                    "on-tertiary-container": "#dbdee0",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "on-surface-variant": "#434654",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "on-primary-fixed": "#00174d",
+                    "on-tertiary": "#ffffff",
+                    "inverse-primary": "#b5c4ff",
+                    "primary-container": "#1a56db",
+                    "on-background": "#131b2e",
+                    "surface-tint": "#1353d8",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#515f74",
+                    "primary": "#003fb1",
+                    "surface-container": "#eaedff",
+                    "on-tertiary-fixed": "#191c1e",
+                    "primary-fixed": "#dbe1ff",
+                    "secondary-container": "#d5e3fc",
+                    "surface": "#faf8ff",
+                    "on-surface": "#131b2e",
+                    "on-primary-container": "#d4dcff",
+                    "surface-dim": "#d2d9f4",
+                    "surface-variant": "#dae2fd",
+                    "surface-bright": "#faf8ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "margin-tablet": "32px",
+                    "gutter": "24px",
+                    "container-max-width": "1280px",
+                    "margin-desktop": "64px",
+                    "unit": "8px"
+            },
+            "fontFamily": {
+                    "headline-md": [
+                            "Inter"
+                    ],
+                    "label-md": [
+                            "JetBrains Mono"
+                    ],
+                    "headline-lg": [
+                            "Inter"
+                    ],
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "headline-lg-mobile": [
+                            "Inter"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "display": [
+                            "Inter"
+                    ],
+                    "label-sm": [
+                            "JetBrains Mono"
+                    ],
+                    "serif": [
+                            "Lora", "serif"
+                    ]
+            },
+            "fontSize": {
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.02em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "14px",
+                                    "letterSpacing": "0.04em",
+                                    "fontWeight": "500"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface border-b border-outline-variant transition-colors">
+<div class="flex items-center gap-6">
+<div class="text-headline-md font-headline-md font-bold text-primary">Folio</div>
+<nav class="hidden md:flex gap-6">
+<a class="text-secondary hover:text-primary transition-colors text-label-md font-label-md" href="#">Workspace</a>
+<a class="text-secondary hover:text-primary transition-colors text-label-md font-label-md" href="#">Notebook</a>
+<a class="text-primary border-b-2 border-primary pb-1 text-label-md font-label-md" href="#">Library</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+<input class="pl-9 pr-4 py-1.5 bg-surface-container border border-outline-variant rounded-md text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none w-64" placeholder="Search..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary px-4 py-1.5 rounded-md text-label-md font-label-md hover:bg-primary/90 transition-colors">New Project</button>
+<div class="flex items-center gap-2">
+<button class="text-secondary hover:text-primary p-1 rounded-full hover:bg-surface-container transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+<button class="text-secondary hover:text-primary p-1 rounded-full hover:bg-surface-container transition-colors"><span class="material-symbols-outlined">settings</span></button>
+<img alt="Researcher Profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover ml-2" data-alt="A small, professional circular avatar profile picture of a researcher in a modern, well-lit studio setting. Crisp details, high resolution." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWUDoNyoX00kmPfnNzyDmnlERRSgC-dYd9zDjrudvcLq9NNQyBVd2t5IZJmLXSKKHJw7y7OIkq93rZ83VRxoY7luWnCfaIXJV49Qmmy_fP2YWmdy8NypgCsYAF0AVj78VS02mIz54rt3VxU1S13oANm-y_V_qJJlO_v-xisgdq_kpaW3gKAUolreNAHLdJR4q-qvtMMBLWaIBMcmoIhdy9USbmSASQe2ljN9uVOKfK21oUob-C5WM"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 pt-16">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-[280px] bg-surface-container-low border-r border-outline-variant flex flex-col py-4 space-y-2 transition-all duration-200 ease-in-out z-40 hidden md:flex">
+<div class="px-6 mb-6">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-lg bg-surface flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-primary">folder_open</span>
+</div>
+<div>
+<h2 class="text-label-md font-label-md font-black text-on-surface">Project Alpha</h2>
+<p class="text-body-sm text-secondary">Deep Work Mode</p>
+</div>
+</div>
+<button class="w-full py-2 border border-outline-variant rounded-md flex items-center justify-center gap-2 text-label-md font-label-md hover:bg-surface-container transition-colors bg-surface">
+<span class="material-symbols-outlined text-[18px]">add</span> Add Source
+                </button>
+</div>
+<nav class="flex-1 flex flex-col gap-1 overflow-y-auto">
+<a class="bg-primary-container text-on-primary-container rounded-lg mx-2 px-4 py-3 flex items-center gap-3 text-label-md font-label-md hover:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined">library_books</span> All Sources
+                </a>
+<a class="text-on-surface-variant mx-2 px-4 py-3 flex items-center gap-3 text-label-md font-label-md hover:bg-surface-container-highest rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">format_quote</span> Citations
+                </a>
+<a class="text-on-surface-variant mx-2 px-4 py-3 flex items-center gap-3 text-label-md font-label-md hover:bg-surface-container-highest rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">psychology</span> Knowledge Assistant
+                </a>
+<a class="text-on-surface-variant mx-2 px-4 py-3 flex items-center gap-3 text-label-md font-label-md hover:bg-surface-container-highest rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">sticky_note_2</span> Saved Notes
+                </a>
+<a class="text-on-surface-variant mx-2 px-4 py-3 flex items-center gap-3 text-label-md font-label-md hover:bg-surface-container-highest rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">edit_note</span> Drafts
+                </a>
+</nav>
+<div class="mt-auto flex flex-col gap-1 px-2 border-t border-outline-variant pt-4">
+<a class="text-on-surface-variant px-4 py-2 flex items-center gap-3 text-label-md font-label-md hover:bg-surface-container-highest rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">help_outline</span> Help
+                </a>
+<a class="text-on-surface-variant px-4 py-2 flex items-center gap-3 text-label-md font-label-md hover:bg-surface-container-highest rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">delete</span> Trash
+                </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-[280px] p-margin-desktop w-full max-w-container-max-width mx-auto">
+<!-- Breadcrumbs / Top Nav -->
+<div class="mb-6 flex items-center gap-2 text-body-sm text-secondary">
+<a class="inline-flex items-center text-primary hover:underline" href="#">
+<span class="material-symbols-outlined text-[16px] mr-1">arrow_back</span> Library
+                </a>
+<span class="text-outline-variant">/</span>
+<span>Project Alpha</span>
+</div>
+<!-- Document Header -->
+<div class="mb-8 border-b border-outline-variant pb-6 flex items-start justify-between">
+<div>
+<h1 class="text-display font-display text-on-surface mb-3 tracking-tight">Einstein</h1>
+<div class="flex items-center text-secondary text-body-sm gap-4">
+<span class="flex items-center gap-1.5 bg-surface-container-highest px-2 py-1 rounded-md font-medium text-on-surface"><span class="material-symbols-outlined text-[16px]">picture_as_pdf</span> PDF</span>
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">calendar_today</span> Added 8/13/2026</span>
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">auto_stories</span> 5 pages</span>
+</div>
+</div>
+<div class="flex items-center gap-3 text-label-md font-label-md">
+<button class="flex items-center gap-2 text-on-surface bg-surface-container px-4 py-2 rounded-lg hover:bg-surface-container-high transition-colors border border-outline-variant"><span class="material-symbols-outlined text-[18px]">edit</span> Edit details</button>
+<button class="flex items-center gap-2 text-on-surface bg-surface-container px-4 py-2 rounded-lg hover:bg-surface-container-high transition-colors border border-outline-variant"><span class="material-symbols-outlined text-[18px]">download</span> Download</button>
+<button class="p-2 text-on-surface hover:bg-surface-container rounded-lg transition-colors border border-transparent hover:border-outline-variant"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+</div>
+<!-- PDF Viewer Container -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[800px]">
+<!-- Viewer Toolbar -->
+<div class="bg-surface-container-low flex items-center justify-between px-6 py-3 border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<button class="p-1.5 text-secondary hover:text-on-surface rounded-md hover:bg-surface-variant transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<div class="flex items-center gap-2">
+<input class="w-12 text-center border-none rounded-md bg-surface py-1 text-label-md font-label-md focus:ring-2 focus:ring-primary outline-none" type="text" value="1"/>
+<span class="text-label-md font-label-md text-secondary">/ 5</span>
+</div>
+<button class="p-1.5 text-secondary hover:text-on-surface rounded-md hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-1.5 text-secondary hover:text-on-surface rounded-md hover:bg-surface-variant transition-colors" title="Zoom Out">
+<span class="material-symbols-outlined text-[20px]">zoom_out</span>
+</button>
+<span class="text-label-md font-label-md text-on-surface w-12 text-center">100%</span>
+<button class="p-1.5 text-secondary hover:text-on-surface rounded-md hover:bg-surface-variant transition-colors" title="Zoom In">
+<span class="material-symbols-outlined text-[20px]">zoom_in</span>
+</button>
+<div class="w-px h-6 bg-outline-variant mx-2"></div>
+<button class="p-1.5 text-secondary hover:text-on-surface rounded-md hover:bg-surface-variant transition-colors" title="Fit to width">
+<span class="material-symbols-outlined text-[20px]">fit_screen</span>
+</button>
+</div>
+</div>
+<!-- Document Content (Mock PDF Rendering) -->
+<div class="flex-1 p-16 overflow-y-auto bg-white flex justify-center">
+<article class="font-serif text-[18px] leading-relaxed text-[#2C2E33] max-w-2xl w-full">
+<div class="text-[13px] text-outline font-sans mb-10 flex items-center gap-2 uppercase tracking-widest font-medium">
+<span class="material-symbols-outlined text-[14px]">home</span> &gt; Sự kiện &gt; Câu chuyện khoa học
+                    </div>
+<h2 class="text-4xl font-bold mb-10 text-on-surface font-headline-lg tracking-tight leading-tight">Einstein - cuộc đời và sự nghiệp</h2>
+<div class="space-y-6">
+<p class="font-semibold text-xl text-on-surface-variant">1- Thời niên thiếu.</p>
+<p>
+                        Albert Einstein sinh ngày 14-3-1879 tại Ulm, miền Wurtemberg, nước Đức. Cái tỉnh nhỏ bé này không mang lại cho Albert một kỷ niệm nào cả vì năm sau, gia đình Einstein đã di chuyển tới Munich. Sống tại nơi đây được một năm, một người em gái của Einstein ra chào đời và từ đó không có thêm tiếng trẻ thơ nữa. Chủ gia đình, ông</p>
+</div>
+</article>
+</div>
+</div>
+</main></div></body></html>

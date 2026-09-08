@@ -1,0 +1,336 @@
+@import 'tailwindcss';
+
+/*
+ * What generated shadcn components need beyond Tailwind itself: `tw-animate-css`
+ * for the enter/exit keyframes their overlays reference, and `shadcn/tailwind.css`
+ * for the Base UI state variants they are written against (`data-open:`,
+ * `data-closed:`, `data-checked:`, …). Neither defines a colour — the palette
+ * below stays the only one.
+ */
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+/*
+ * DESIGN.md's three families, self-hosted (no CDN, no request to a third party):
+ * Inter for prose and UI, JetBrains Mono for metadata and labels, Lora for the
+ * long-form *reading* surface — extracted source text in the reader, nothing
+ * else. Variable builds, so every weight in the type scale comes from one file
+ * per family.
+ */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+@import '@fontsource-variable/lora';
+
+/*
+ * Design tokens from frontend/DESIGN.md ("Academic Modern"). Kept as Tailwind v4
+ * theme variables so components reference roles (surface, primary, outline)
+ * rather than hex values.
+ */
+@theme {
+  --color-surface: #faf8ff;
+  --color-surface-dim: #d2d9f4;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f3ff;
+  --color-surface-container: #eaedff;
+  --color-surface-container-high: #e2e7ff;
+  --color-surface-container-highest: #dae2fd;
+  --color-on-surface: #131b2e;
+  --color-on-surface-variant: #434654;
+  --color-outline: #737686;
+  --color-outline-variant: #c3c5d7;
+
+  --color-primary: #003fb1;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #1a56db;
+  --color-on-primary-container: #d4dcff;
+
+  --color-secondary: #515f74;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #d5e3fc;
+  /* DESIGN.md's pairing for `secondary-container`; unused until the shadcn
+   * bridge below needed a `secondary-foreground`. 4.57:1 on its container,
+   * which clears WCAG AA for body text (PRD §18). */
+  --color-on-secondary-container: #57657a;
+
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  /* 'X Variable' is the family name the @fontsource-variable packages register;
+   * the plain name picks up a locally installed copy before falling back. */
+  --font-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+  --font-serif: 'Lora Variable', Lora, Georgia, 'Times New Roman', serif;
+
+  /* `--radius` is what the bare `rounded` utility reads; `--radius-DEFAULT` is a
+   * v3 spelling that generates nothing. DESIGN.md: 4px base, 8px for cards. */
+  --radius: 0.25rem;
+  --radius-lg: 0.5rem;
+
+  --container-workspace: 80rem;
+}
+
+/*
+ * ── The shadcn bridge ──────────────────────────────────────────────────────
+ *
+ * A generated shadcn component says `bg-background`, `border-input`,
+ * `ring-ring`; the palette above says `surface`, `outline-variant`, `primary`.
+ * Everything below exists so those components render in DESIGN.md's colours
+ * **without a single edit to the generated file**.
+ *
+ * No colour is defined here. Every entry is a redirect, which is what keeps
+ * DESIGN.md the one source of truth: change a hex up there and the whole
+ * shadcn surface follows.
+ *
+ * Two layers, matching shadcn's own convention, because both are actually
+ * used by the components:
+ *   :root         — the bare names (`--secondary`), which generated code
+ *                   reaches for directly inside `color-mix()`.
+ *   @theme inline — the `--color-*` names Tailwind turns into utilities.
+ * `inline` matters: without it the value would resolve once at `:root`, so a
+ * scoped override could never reach it.
+ */
+
+/*
+ * Not enabling dark mode — *disabling* it. Tailwind v4's stock `dark:` variant
+ * is `prefers-color-scheme`, so every `dark:` class shadcn generates would fire
+ * on a machine set to dark and paint half the UI against a palette DESIGN.md
+ * does not have. Rebinding the variant to a `.dark` ancestor that is never set
+ * makes those classes inert, which is the intended behaviour until DESIGN.md
+ * gains a second palette.
+ */
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Page ground — the pair `body` already sets below. */
+  --background: var(--color-surface);
+  --foreground: var(--color-on-surface);
+
+  /* A card and a popover are the same white plane in DESIGN.md; it draws no
+   * distinction between a raised surface and a floating one. */
+  --card: var(--color-surface-container-lowest);
+  --card-foreground: var(--color-on-surface);
+  --popover: var(--color-surface-container-lowest);
+  --popover-foreground: var(--color-on-surface);
+
+  --primary: var(--color-primary);
+  --primary-foreground: var(--color-on-primary);
+
+  /* M3's `secondary` is an ink for text; shadcn's is a *filled* low-emphasis
+   * surface. The container is the role that matches, not the like-named one. */
+  --secondary: var(--color-secondary-container);
+  --secondary-foreground: var(--color-on-secondary-container);
+
+  --muted: var(--color-surface-container);
+  --muted-foreground: var(--color-on-surface-variant);
+
+  /* shadcn spends `accent` on hover and highlight states — one elevation step,
+   * not a change of hue. */
+  --accent: var(--color-surface-container-high);
+  --accent-foreground: var(--color-on-surface);
+
+  --destructive: var(--color-error);
+  --destructive-foreground: var(--color-on-error);
+
+  /* One token for both: every border in this codebase is `outline-variant`.
+   * Giving `input` its own value would invent a distinction DESIGN.md has not
+   * made — and it would show up as inputs and dialogs disagreeing. */
+  --border: var(--color-outline-variant);
+  --input: var(--color-outline-variant);
+
+  /* The ring `:focus-visible` already draws below (PRD §18). */
+  --ring: var(--color-primary);
+
+  /* The rail. DESIGN.md § Layout & Spacing has always specified "a fixed 280px
+   * navigation panel on the left, using a `surface-subtle` background" — these
+   * six are that sentence, expressed in the vocabulary the generated
+   * `sidebar.tsx` reads. Six and not eight: the generated file never mentions
+   * `--sidebar-primary`, and an unread token is a guess. */
+  --sidebar: var(--color-surface-container-low);
+  --sidebar-foreground: var(--color-on-surface-variant);
+  /* One token, two states: the generated menu button spends `sidebar-accent` on
+   * both `hover:` and `data-active:`. It holds the hover value, and the active
+   * item gets the wireframe's filled pill from a wrapper class in
+   * `space-shell.tsx` — re-pointing this would paint every hover blue. */
+  --sidebar-accent: var(--color-surface-container-highest);
+  --sidebar-accent-foreground: var(--color-on-surface);
+  --sidebar-border: var(--color-outline-variant);
+  --sidebar-ring: var(--color-primary);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  /* `--color-primary` is deliberately NOT re-declared here. It already exists
+   * above with exactly the value shadcn wants, and `bg-primary` / `text-primary`
+   * are live in the reader (block.tsx, reader-header.tsx). Aliasing it to
+   * `var(--primary)` — which points back at it — would be a self-reference. */
+  --color-primary-foreground: var(--primary-foreground);
+
+  /* The one name where the two vocabularies disagree and shadcn wins.
+   * DESIGN.md's M3 `secondary` is an *ink* (#515f74); shadcn's is a filled
+   * surface, so from here on `bg-secondary` means #d5e3fc. Safe because no
+   * component has ever used the M3 spelling — checked, zero call sites — but
+   * it does mean the ink is now reachable only as `on-secondary-container`. */
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/*
+ * Deliberately absent: `--chart-1…5`, and — of the sidebar family —
+ * `--sidebar-primary` and `--sidebar-primary-foreground`. No consumer, and
+ * DESIGN.md has no value to point them at. A missing token fails visibly the
+ * first time it is used; a guessed one fails plausibly forever. The other six
+ * sidebar tokens are above, because `sidebar.tsx` actually reads them.
+ *
+ * Also absent: a radius bridge. shadcn's components reach for `rounded-lg`,
+ * and DESIGN.md's 8px for cards is already what `--radius-lg` says — the two
+ * scales happen to agree, so there is nothing to translate.
+ */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /*
+   * Tailwind v4 dropped v3's default border colour, so a bare `border-r` paints
+   * `currentColor`. Generated shadcn components are written against the reset
+   * `shadcn init` adds (`* { @apply border-border … }`), which this project
+   * reverted wholesale — so the sidebar's right edge and the mobile sheet's
+   * edges came out as the nav *ink* rather than a border. Restoring the
+   * border-colour half fixes both at the source instead of patching each call
+   * site, and it is safe: this is `base`, so any explicit `border-<colour>`
+   * utility still wins, and an audit found only those two places in `src/`
+   * with a border width and no colour.
+   *
+   * The reset's `outline-ring/50` half is deliberately NOT restored — §18's
+   * focus ring is the one `:focus-visible` draws below.
+   */
+  *,
+  ::before,
+  ::after,
+  ::backdrop {
+    border-color: var(--color-outline-variant);
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+    font-family: var(--font-sans);
+    /* body-md from DESIGN.md */
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+
+  /* A visible focus ring everywhere — PRD §18 keyboard operability. */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+/*
+ * The notebook's reading surface (PRD §13). Preflight strips heading, list, and
+ * quote styling, so the editor and the print view give it back here — once, for
+ * both, since they share the class. Tokens only; sizes follow DESIGN.md's
+ * type scale, the body at the reader's 16/28 (REQ-236).
+ */
+@layer components {
+  .prose-notebook > * + * {
+    margin-top: 1rem;
+  }
+  .prose-notebook h1,
+  .prose-notebook h2,
+  .prose-notebook h3,
+  .prose-notebook h4 {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    color: var(--color-on-surface);
+    margin-top: 2rem;
+    /* Keep a heading with what follows it (PRD §14 print) — harmless on screen. */
+    break-after: avoid;
+  }
+  .prose-notebook h1 { font-size: 1.75rem; }
+  .prose-notebook h2 { font-size: 1.5rem; }
+  .prose-notebook h3,
+  .prose-notebook h4 { font-size: 1.25rem; }
+  .prose-notebook > h1:first-child,
+  .prose-notebook > h2:first-child,
+  .prose-notebook > h3:first-child {
+    margin-top: 0;
+  }
+  .prose-notebook ul,
+  .prose-notebook ol {
+    padding-left: 1.5rem;
+  }
+  .prose-notebook ul { list-style: disc; }
+  .prose-notebook ol { list-style: decimal; }
+  .prose-notebook li + li { margin-top: 0.25rem; }
+  .prose-notebook li > * + * { margin-top: 0.25rem; }
+  .prose-notebook blockquote {
+    border-left: 3px solid var(--color-outline-variant);
+    padding-left: 1rem;
+    color: var(--color-on-surface-variant);
+    font-style: italic;
+  }
+  .prose-notebook a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+  .prose-notebook p {
+    orphans: 3;
+    widows: 3;
+  }
+  /* Tiptap's placeholder: an empty first paragraph shows the hint. */
+  .prose-notebook p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: var(--color-outline);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+  .prose-notebook .ProseMirror-selectednode {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+    border-radius: 0.25rem;
+  }
+}
+
+@media print {
+  /* Only the document and its references (PRD §14): no shell, no controls. */
+  body {
+    background: white;
+  }
+  .print-document {
+    color: black;
+  }
+  .print-document a {
+    color: inherit;
+  }
+}

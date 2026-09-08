@@ -1,0 +1,437 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Saved Notes - Folio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-surface": "#283044",
+                      "on-primary-fixed-variant": "#003dab",
+                      "surface-container": "#eaedff",
+                      "on-tertiary": "#ffffff",
+                      "inverse-primary": "#b5c4ff",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed-dim": "#c4c7c9",
+                      "surface-container-low": "#f2f3ff",
+                      "primary-fixed": "#dbe1ff",
+                      "on-secondary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "on-secondary-fixed-variant": "#3a485b",
+                      "on-error": "#ffffff",
+                      "error": "#ba1a1a",
+                      "outline-variant": "#c3c5d7",
+                      "secondary-fixed-dim": "#b9c7df",
+                      "tertiary-container": "#5f6264",
+                      "primary-fixed-dim": "#b5c4ff",
+                      "on-tertiary-container": "#dbdee0",
+                      "surface-container-highest": "#dae2fd",
+                      "surface-variant": "#dae2fd",
+                      "on-tertiary-fixed-variant": "#444749",
+                      "surface-dim": "#d2d9f4",
+                      "primary-container": "#1a56db",
+                      "secondary-fixed": "#d5e3fc",
+                      "surface": "#faf8ff",
+                      "secondary": "#515f74",
+                      "background": "#faf8ff",
+                      "surface-bright": "#faf8ff",
+                      "on-secondary-fixed": "#0d1c2e",
+                      "on-surface": "#131b2e",
+                      "primary": "#003fb1",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-container": "#57657a",
+                      "on-primary-container": "#d4dcff",
+                      "secondary-container": "#d5e3fc",
+                      "outline": "#737686",
+                      "surface-tint": "#1353d8",
+                      "on-primary": "#ffffff",
+                      "on-background": "#131b2e",
+                      "inverse-on-surface": "#eef0ff",
+                      "surface-container-high": "#e2e7ff",
+                      "on-primary-fixed": "#00174d",
+                      "on-surface-variant": "#434654",
+                      "on-tertiary-fixed": "#191c1e",
+                      "tertiary-fixed": "#e0e3e5",
+                      "tertiary": "#474a4c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin-desktop": "64px",
+                      "gutter": "24px",
+                      "margin-mobile": "16px",
+                      "margin-tablet": "32px",
+                      "unit": "8px",
+                      "container-max-width": "1280px"
+              },
+              "fontFamily": {
+                      "label-md": [
+                              "JetBrains Mono"
+                      ],
+                      "label-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "14px",
+                                      "letterSpacing": "0.04em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+          font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .bento-card {
+            transition: all 0.2s ease;
+        }
+        .bento-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(148, 163, 184, 0.1);
+        }
+      </style>
+</head>
+<body class="bg-background text-on-surface font-body-md h-screen overflow-hidden flex flex-col">
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline flat no shadows">
+<div class="flex items-center space-x-8 h-full">
+<span class="text-headline-md font-headline-md font-bold text-primary dark:text-on-primary-fixed">Folio</span>
+<div class="hidden md:flex h-full space-x-6">
+<a class="flex items-center text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-inverse-primary transition-colors h-full px-2 text-label-md font-label-md" href="#">
+                    Workspace
+                </a>
+<a class="flex items-center text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-inverse-primary transition-colors h-full px-2 text-label-md font-label-md" href="#">
+                    Notebook
+                </a>
+<a class="flex items-center text-primary dark:text-inverse-primary border-b-2 border-primary dark:border-inverse-primary pb-1 h-full px-2 text-label-md font-label-md scale-95 transition-transform duration-150" href="#">
+                    Library
+                </a>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-fixed-dim transition-all w-64 text-on-surface" placeholder="Search..." type="text">
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-full text-label-md font-label-md hover:bg-surface-tint transition-colors">
+                New Project
+            </button>
+<div class="flex space-x-2">
+<button class="p-2 text-secondary hover:text-primary transition-colors rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-secondary hover:text-primary transition-colors rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<img alt="Researcher Profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover ml-2" data-alt="A small, circular avatar portrait of a professional researcher wearing subtle, modern glasses, smiling slightly against a clean, light studio background, emitting a calm and trustworthy demeanor. High key lighting, modern academic aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeYSs3chB7AMplWiR9wCkiheP3IJpPm7oyGJ9CvDq2ou3Q1dOZQ_1rUdPtw_EoBiG-OOLdGPLlYu8ZyWMOPm_AGssKjkMpvNt5y5xEeGvusSBNVXIJIZFVPenbwNTDZ981d1BBlYhBftEdNigBOwnA_jHY9P1RMQRJysExleiPDBDVtKy46QoZkankd0nE53lwcQORDiBTidLx1_XXgNPwzBTydceLDRoNg3IuuX4g-xKE6ZcXo3w">
+</div>
+</nav>
+<div class="flex flex-1 pt-16 h-full">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-[280px] bg-surface-container-low dark:bg-inverse-surface border-r border-outline-variant dark:border-outline flat no shadows flex flex-col py-4 space-y-2 z-40">
+<div class="px-6 pb-4 mb-4 border-b border-outline-variant">
+<div class="flex items-center space-x-3 mb-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="folder_special">folder_special</span>
+</div>
+<div>
+<h2 class="text-label-md font-label-md font-black text-on-surface dark:text-on-surface-variant">Project Alpha</h2>
+<p class="text-label-sm font-label-sm text-secondary">Deep Work Mode</p>
+</div>
+</div>
+<button class="w-full flex items-center justify-center space-x-2 bg-surface text-primary border border-outline-variant rounded-lg py-2 hover:bg-surface-container-lowest transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+<span class="text-label-md font-label-md">Add Source</span>
+</button>
+</div>
+<nav class="flex-1 overflow-y-auto px-2 space-y-1">
+<a class="flex items-center space-x-3 text-on-surface-variant dark:text-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="library_books">library_books</span>
+<span class="text-label-md font-label-md">All Sources</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant dark:text-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="format_quote">format_quote</span>
+<span class="text-label-md font-label-md">Citations</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant dark:text-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span class="text-label-md font-label-md">Knowledge Assistant</span>
+</a>
+<a class="flex items-center space-x-3 bg-primary-container dark:bg-on-primary-fixed-variant text-on-primary-container dark:text-primary-fixed rounded-lg mx-2 px-4 py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined filled-icon" data-icon="sticky_note_2">sticky_note_2</span>
+<span class="text-label-md font-label-md">Saved Notes</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant dark:text-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="edit_note">edit_note</span>
+<span class="text-label-md font-label-md">Drafts</span>
+</a>
+</nav>
+<div class="px-2 pt-4 border-t border-outline-variant mt-auto space-y-1">
+<a class="flex items-center space-x-3 text-on-surface-variant dark:text-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help_outline">help_outline</span>
+<span class="text-label-md font-label-md">Help</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant dark:text-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+<span class="text-label-md font-label-md">Trash</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] flex-1 overflow-y-auto bg-background p-margin-desktop">
+<header class="mb-gutter flex justify-between items-end">
+<div>
+<h1 class="text-headline-lg font-headline-lg text-on-surface mb-2">Saved Notes &amp; Insights</h1>
+<p class="text-body-lg font-body-lg text-secondary">Gathered from Knowledge Assistant interactions.</p>
+</div>
+<div class="flex space-x-3">
+<button class="flex items-center space-x-2 px-4 py-2 bg-surface border border-outline-variant rounded-md text-label-md font-label-md text-secondary hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="filter_list">filter_list</span>
+<span>Filter</span>
+</button>
+<button class="flex items-center space-x-2 px-4 py-2 bg-surface border border-outline-variant rounded-md text-label-md font-label-md text-secondary hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="grid_view">grid_view</span>
+<span>View</span>
+</button>
+</div>
+</header>
+<!-- Bento Grid Gallery -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter auto-rows-min">
+<!-- Note Card 1 -->
+<div class="bento-card bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col relative group">
+<div class="absolute top-0 left-0 w-full h-[2px] bg-primary rounded-t-xl opacity-50"></div>
+<div class="flex justify-between items-start mb-4">
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container-low text-secondary text-label-sm font-label-sm rounded">#methodology</span>
+<span class="px-2 py-1 bg-surface-container-low text-secondary text-label-sm font-label-sm rounded">#AI</span>
+</div>
+<button class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<p class="text-body-md font-body-md text-on-surface mb-6 flex-1">
+                        "The integration of synthetic data in training models must be balanced with strict verification against real-world datasets to prevent compounding hallucination rates over successive generations."
+                    </p>
+<div class="mt-auto pt-4 border-t border-outline-variant flex justify-between items-center">
+<div class="flex items-center space-x-2 text-secondary hover:text-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="description">description</span>
+<span class="text-label-sm font-label-sm truncate max-w-[150px]">Synthesizing Reality: Vol 4</span>
+</div>
+<div class="flex space-x-2">
+<button class="p-1.5 text-secondary hover:text-primary hover:bg-surface-container rounded-md transition-colors tooltip" title="Convert to Source">
+<span class="material-symbols-outlined text-[18px]" data-icon="transform">transform</span>
+</button>
+<div class="p-1.5 text-outline cursor-grab active:cursor-grabbing hover:text-on-surface rounded-md transition-colors" title="Drag to Notebook">
+<span class="material-symbols-outlined text-[18px]" data-icon="drag_indicator">drag_indicator</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Note Card 2 -->
+<div class="bento-card bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col relative group">
+<div class="absolute top-0 left-0 w-full h-[2px] bg-tertiary-fixed-dim rounded-t-xl opacity-50"></div>
+<div class="flex justify-between items-start mb-4">
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container-low text-secondary text-label-sm font-label-sm rounded">#ethics</span>
+<span class="px-2 py-1 bg-surface-container-low text-secondary text-label-sm font-label-sm rounded">#bias</span>
+</div>
+<button class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<p class="text-body-md font-body-md text-on-surface mb-6 flex-1 italic">
+                        It's noted that implicit bias in historical data often supersedes intentional algorithmic fairness constraints unless explicitly modeled as an adversarial objective during the pre-training phase.
+                    </p>
+<div class="mt-auto pt-4 border-t border-outline-variant flex justify-between items-center">
+<div class="flex items-center space-x-2 text-secondary hover:text-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="forum">forum</span>
+<span class="text-label-sm font-label-sm truncate max-w-[150px]">Chat with KA - Oct 12</span>
+</div>
+<div class="flex space-x-2">
+<button class="p-1.5 text-secondary hover:text-primary hover:bg-surface-container rounded-md transition-colors tooltip" title="Convert to Source">
+<span class="material-symbols-outlined text-[18px]" data-icon="transform">transform</span>
+</button>
+<div class="p-1.5 text-outline cursor-grab active:cursor-grabbing hover:text-on-surface rounded-md transition-colors" title="Drag to Notebook">
+<span class="material-symbols-outlined text-[18px]" data-icon="drag_indicator">drag_indicator</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Note Card 3 -->
+<div class="bento-card bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col relative group xl:row-span-2">
+<div class="absolute top-0 left-0 w-full h-[2px] bg-primary rounded-t-xl opacity-50"></div>
+<div class="flex justify-between items-start mb-4">
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container-low text-secondary text-label-sm font-label-sm rounded">#architecture</span>
+</div>
+<button class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<div class="mb-4 bg-surface-container-low rounded-lg p-4 overflow-hidden relative">
+<!-- Subtle abstract visualization -->
+<div class="w-full h-32 bg-cover bg-center rounded opacity-60 mb-3 mix-blend-multiply" data-alt="Abstract geometric visualization representing neural network architecture. Clean lines, sparse nodes, soft blue and gray tones, modern minimalist aesthetic, soft diffuse lighting, high-tech academic context." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD9iXo_oqpFI8ufJT20wEND1Z-3qOW2FafsplsB74s3cU5Bie23hnppxwQ0qJ4uH4DgpDhjCBfAOwzLTsk3DwDfWwRsTFIcEpNc_kXIOCYLT8a5K1yo6Ya3A332jeS0kilgK49XmExOXX8GC6VFVCg99YK_SFGRYL4S7tgBwm73vzSj3okBRaOHCRUhZzlM2BZx807_D1DMKfHdUlHLqmnWefw693UE9o7-ZoWRswehrZsd-Qfd0ug')"></div>
+<p class="text-body-sm font-body-sm text-on-surface-variant font-label-md">
+                            function optimizePath(graph, nodes) {<br>
+                            &nbsp;&nbsp;return graph.reduce(...);<br>
+                            }
+                        </p>
+</div>
+<p class="text-body-md font-body-md text-on-surface mb-6 flex-1">
+                        Proposed structural modification for the attention mechanism to reduce O(n^2) complexity in long-context retrieval scenarios. Note specifically refers to sparse block configurations.
+                    </p>
+<div class="mt-auto pt-4 border-t border-outline-variant flex justify-between items-center">
+<div class="flex items-center space-x-2 text-secondary hover:text-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="article">article</span>
+<span class="text-label-sm font-label-sm truncate max-w-[150px]">Draft: Scalable Context</span>
+</div>
+<div class="flex space-x-2">
+<button class="p-1.5 text-secondary hover:text-primary hover:bg-surface-container rounded-md transition-colors tooltip" title="Convert to Source">
+<span class="material-symbols-outlined text-[18px]" data-icon="transform">transform</span>
+</button>
+<div class="p-1.5 text-outline cursor-grab active:cursor-grabbing hover:text-on-surface rounded-md transition-colors" title="Drag to Notebook">
+<span class="material-symbols-outlined text-[18px]" data-icon="drag_indicator">drag_indicator</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Note Card 4 -->
+<div class="bento-card bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col relative group">
+<div class="absolute top-0 left-0 w-full h-[2px] bg-tertiary-fixed-dim rounded-t-xl opacity-50"></div>
+<div class="flex justify-between items-start mb-4">
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container-low text-secondary text-label-sm font-label-sm rounded">#definition</span>
+<span class="px-2 py-1 bg-surface-container-low text-secondary text-label-sm font-label-sm rounded">#glossary</span>
+</div>
+<button class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<h3 class="text-headline-md font-headline-md text-on-surface mb-2">Epistemic Uncertainty</h3>
+<p class="text-body-md font-body-md text-on-surface mb-6 flex-1">
+                        Uncertainty derived from a lack of knowledge or data. Unlike aleatoric uncertainty, it can theoretically be reduced to zero given enough information.
+                    </p>
+<div class="mt-auto pt-4 border-t border-outline-variant flex justify-between items-center">
+<div class="flex items-center space-x-2 text-secondary hover:text-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="book">book</span>
+<span class="text-label-sm font-label-sm truncate max-w-[150px]">Core Concepts Wiki</span>
+</div>
+<div class="flex space-x-2">
+<button class="p-1.5 text-secondary hover:text-primary hover:bg-surface-container rounded-md transition-colors tooltip" title="Convert to Source">
+<span class="material-symbols-outlined text-[18px]" data-icon="transform">transform</span>
+</button>
+<div class="p-1.5 text-outline cursor-grab active:cursor-grabbing hover:text-on-surface rounded-md transition-colors" title="Drag to Notebook">
+<span class="material-symbols-outlined text-[18px]" data-icon="drag_indicator">drag_indicator</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom spacing -->
+<div class="h-margin-desktop w-full"></div>
+</main>
+</div>
+</body></html>

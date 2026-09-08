@@ -1,0 +1,78 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: wikibooklm-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: wikibooklm
+      POSTGRES_PASSWORD: wikibooklm
+      POSTGRES_DB: wikibooklm
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U wikibooklm -d wikibooklm']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: wikibooklm-redis
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # S3-compatible object store for original files (PRD §17 encryption at rest is
+  # bucket-level server-side encryption). MinIO's built-in KMS (a static key) is
+  # what makes `mc encrypt set sse-s3` possible without standing up KES; any
+  # S3-compatible store drops in, and the API/worker only speak S3.
+  minio:
+    image: minio/minio:latest
+    container_name: wikibooklm-minio
+    restart: unless-stopped
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: wikibooklm
+      MINIO_ROOT_PASSWORD: wikibooklm-secret
+      # Built-in KMS: a 32-byte base64 key enabling SSE-S3. Dev credential only.
+      MINIO_KMS_SECRET_KEY: storage-sse:vSJkynRiflMf1HCSpfRVHgZ9lRyn0160M+LB6Yp0UME=
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio-data:/data
+
+  # One-shot bucket bootstrap. Retries until MinIO answers, so compose up order
+  # does not matter. Bucket policy is private ("none") and server-side encryption
+  # is enabled per the PRD §17 requirement that stored originals be encrypted.
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    restart: 'no'
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        for i in $$(seq 1 30); do
+          mc alias set local http://minio:9000 wikibooklm wikibooklm-secret && break
+          sleep 2
+        done
+        mc mb --ignore-existing local/wikibooklm
+        mc anonymous set none local/wikibooklm
+        mc encrypt set sse-s3 local/wikibooklm
+
+volumes:
+  db-data:
+  redis-data:
+  minio-data:

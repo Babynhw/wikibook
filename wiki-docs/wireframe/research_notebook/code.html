@@ -1,0 +1,316 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Folio - Research Notebook</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#283044",
+                        "on-primary-fixed-variant": "#003dab",
+                        "surface-container": "#eaedff",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#b5c4ff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "surface-container-low": "#f2f3ff",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#c3c5d7",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "tertiary-container": "#5f6264",
+                        "primary-fixed-dim": "#b5c4ff",
+                        "on-tertiary-container": "#dbdee0",
+                        "surface-container-highest": "#dae2fd",
+                        "surface-variant": "#dae2fd",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "surface-dim": "#d2d9f4",
+                        "primary-container": "#1a56db",
+                        "secondary-fixed": "#d5e3fc",
+                        "surface": "#faf8ff",
+                        "secondary": "#515f74",
+                        "background": "#faf8ff",
+                        "surface-bright": "#faf8ff",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-surface": "#131b2e",
+                        "primary": "#003fb1",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#57657a",
+                        "on-primary-container": "#d4dcff",
+                        "secondary-container": "#d5e3fc",
+                        "outline": "#737686",
+                        "surface-tint": "#1353d8",
+                        "on-primary": "#ffffff",
+                        "on-background": "#131b2e",
+                        "inverse-on-surface": "#eef0ff",
+                        "surface-container-high": "#e2e7ff",
+                        "on-primary-fixed": "#00174d",
+                        "on-surface-variant": "#434654",
+                        "on-tertiary-fixed": "#191c1e",
+                        "tertiary-fixed": "#e0e3e5",
+                        "tertiary": "#474a4c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "margin-tablet": "32px",
+                        "unit": "8px",
+                        "container-max-width": "1280px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["JetBrains Mono"],
+                        "label-sm": ["JetBrains Mono"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #faf8ff; color: #131b2e; }
+        .editor-content:empty:before {
+            content: attr(data-placeholder);
+            color: #737686;
+            pointer-events: none;
+            display: block; /* For Firefox */
+        }
+        /* Custom subtle scrollbar for the drawer */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #c3c5d7; border-radius: 4px; }
+        
+        .floating-toolbar {
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            opacity: 0;
+            transform: translateY(10px) translateX(-50%);
+            pointer-events: none;
+        }
+        .floating-toolbar.active {
+            opacity: 1;
+            transform: translateY(0) translateX(-50%);
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body class="bg-surface h-full flex flex-col overflow-hidden text-on-surface">
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface border-b border-outline-variant flat no shadows">
+<!-- Brand / Left -->
+<div class="flex items-center gap-gutter">
+<span class="text-headline-md font-headline-md font-bold text-primary">Folio</span>
+<!-- Navigation Links -->
+<div class="hidden md:flex gap-unit items-center ml-8">
+<a class="text-secondary hover:text-primary transition-colors text-label-md font-label-md px-4 py-2" href="#">Workspace</a>
+<a class="text-primary border-b-2 border-primary pb-1 text-label-md font-label-md px-4 py-2 hover:text-primary transition-colors active:scale-95 transition-transform duration-150" href="#">Notebook</a>
+<a class="text-secondary hover:text-primary transition-colors text-label-md font-label-md px-4 py-2" href="#">Library</a>
+</div>
+</div>
+<!-- Search / Right -->
+<div class="flex items-center gap-gutter">
+<!-- Search Bar -->
+<div class="relative hidden lg:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-outline text-label-md">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded text-body-sm font-body-sm pl-10 pr-4 py-1.5 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-outline text-on-surface" placeholder="Search Notebooks..." type="text">
+</div>
+<!-- Trailing Icons -->
+<div class="flex items-center gap-2">
+<button aria-label="notifications" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors text-secondary">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button aria-label="settings" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors text-secondary">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<!-- Primary Action -->
+<button class="bg-primary text-on-primary text-label-md font-label-md px-6 py-2 rounded shadow-sm hover:bg-surface-tint transition-colors">
+                New Project
+            </button>
+<!-- Profile Image -->
+<img alt="Researcher Profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover ml-2" data-alt="A small, professional headshot photo of an academic researcher with a clean, light mode background, soft lighting, calm expression." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDExA-awyCUl8oZdU2mCo1QGplJrgX1GkDVt_smzo5EBGlZIQYQ81XEcwpmLVSm6n9Mv-AX4H-d7SjT1AtGGZ79iTactcviaHP9NTo5K1VQ5uR8Kldox913HSSCCafw204X-z5HNQo1xIg2ZPx2ofBvxPQ7FPQHTSJ0FC4RE7jW0wTVmLgo7Pxd9tZG5Vun8UCIMlmeqfbrq6Jx3gL8gGp0QIs18eNg1GSuFZarCzPjiBliMkfNUeA">
+</div>
+</nav>
+<!-- Main Workspace Area -->
+<div class="flex flex-1 pt-16 h-full overflow-hidden">
+<!-- Editor Canvas (Center) -->
+<main class="flex-1 overflow-y-auto relative bg-surface flex justify-center py-margin-desktop custom-scrollbar">
+<div class="w-full max-w-[800px] px-margin-tablet lg:px-0 pb-32">
+<!-- Document Header -->
+<header class="mb-12 group relative">
+<input class="w-full text-display font-display font-bold text-on-surface bg-transparent border-none focus:outline-none focus:ring-0 p-0 placeholder-outline" placeholder="Document Title" type="text" value="The Impact of Generative AI on Academic Integrity">
+<div class="flex items-center gap-4 mt-4 text-secondary text-body-sm font-body-sm">
+<span>Last edited 2 mins ago</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">visibility</span> Private</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="flex items-center gap-1 text-primary cursor-pointer hover:underline"><span class="material-symbols-outlined text-[16px]">folder</span> Project Alpha</span>
+</div>
+</header>
+<!-- Rich Text Editor Area -->
+<div class="editor-content text-body-lg font-body-lg text-on-surface-variant leading-relaxed min-h-[500px] focus:outline-none" data-placeholder="Start writing or type '/' for commands...">
+<p class="mb-6">The rapid integration of sophisticated generative models into educational workflows presents a dual-edged sword. On one hand, these tools democratize access to personalized tutoring and ideation assistance; on the other, they fundamentally challenge traditional metrics of original student work.</p>
+<p class="mb-6">Initial studies suggest a growing reliance on these systems for initial draft generation. It is crucial to examine the pedagogical shifts required to evaluate critical thinking rather than mere output generation.</p>
+<h2 class="text-headline-md font-headline-md text-on-surface mt-10 mb-4 font-semibold">Methodology Overview</h2>
+<p class="mb-6">This research adopts a mixed-methods approach, analyzing textual submissions from a cohort of 500 undergraduate students across multiple disciplines before and after the widespread availability of specific AI tools.</p>
+</div>
+</div>
+<!-- Floating Formatting Toolbar (Absolute to viewport, positioned by JS ideally, simplified here) -->
+<div class="floating-toolbar fixed bottom-8 left-1/2 -translate-x-1/2 bg-surface-container-lowest border border-outline-variant rounded-full px-4 py-2 flex items-center gap-2 shadow-[0px_4px_12px_rgba(15,23,42,0.1)] z-40" id="formatting-toolbar">
+<select class="bg-transparent border-none text-body-sm font-body-sm text-on-surface focus:ring-0 py-1 pl-2 pr-6 cursor-pointer hover:bg-surface-container-low rounded">
+<option>Normal text</option>
+<option>Heading 1</option>
+<option>Heading 2</option>
+<option>Heading 3</option>
+</select>
+<div class="w-px h-6 bg-outline-variant mx-1"></div>
+<button class="p-1.5 rounded hover:bg-surface-container-low text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">format_bold</span></button>
+<button class="p-1.5 rounded hover:bg-surface-container-low text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">format_italic</span></button>
+<button class="p-1.5 rounded hover:bg-surface-container-low text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">format_underlined</span></button>
+<div class="w-px h-6 bg-outline-variant mx-1"></div>
+<button class="p-1.5 rounded hover:bg-surface-container-low text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">format_list_bulleted</span></button>
+<button class="p-1.5 rounded hover:bg-surface-container-low text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">format_list_numbered</span></button>
+<button class="p-1.5 rounded hover:bg-surface-container-low text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">format_quote</span></button>
+<div class="w-px h-6 bg-outline-variant mx-1"></div>
+<button class="p-1.5 rounded hover:bg-surface-container-low text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">add_link</span></button>
+</div>
+<!-- Quick Actions (Export/Side drawer toggle) -->
+<div class="fixed top-24 right-8 flex flex-col gap-3 z-30">
+<button class="w-10 h-10 bg-surface-container-lowest border border-outline-variant rounded-full flex items-center justify-center text-secondary hover:text-primary hover:border-primary hover:shadow-[0px_4px_12px_rgba(15,23,42,0.1)] transition-all" id="toggle-drawer" title="Toggle Research Drawer">
+<span class="material-symbols-outlined">menu_open</span>
+</button>
+<div class="relative group">
+<button class="w-10 h-10 bg-surface-container-lowest border border-outline-variant rounded-full flex items-center justify-center text-secondary hover:text-primary hover:border-primary hover:shadow-[0px_4px_12px_rgba(15,23,42,0.1)] transition-all">
+<span class="material-symbols-outlined">ios_share</span>
+</button>
+<!-- Export Menu Dropdown (Hover) -->
+<div class="absolute right-12 top-0 bg-surface-container-lowest border border-outline-variant rounded shadow-[0px_4px_12px_rgba(15,23,42,0.1)] py-2 w-48 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-200 flex flex-col">
+<span class="px-4 py-1 text-label-sm font-label-sm text-outline uppercase tracking-wider mb-1">Export As</span>
+<button class="px-4 py-2 text-left text-body-sm font-body-sm text-on-surface hover:bg-surface-container-low flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">picture_as_pdf</span> PDF Document
+                        </button>
+<button class="px-4 py-2 text-left text-body-sm font-body-sm text-on-surface hover:bg-surface-container-low flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary">markdown</span> Markdown
+                        </button>
+<button class="px-4 py-2 text-left text-body-sm font-body-sm text-on-surface hover:bg-surface-container-low flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary">description</span> Word (.docx)
+                        </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Research Side-Drawer (Right Panel) -->
+<aside class="w-[320px] bg-surface-container-low border-l border-outline-variant flex flex-col transition-all duration-300 ease-in-out transform translate-x-0" id="research-drawer">
+<!-- Drawer Header -->
+<div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="text-label-md font-label-md text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">library_books</span>
+                    Research Panel
+                </h3>
+<div class="flex gap-1">
+<button class="p-1 rounded hover:bg-surface-variant text-secondary"><span class="material-symbols-outlined text-[18px]">search</span></button>
+<button class="p-1 rounded hover:bg-surface-variant text-secondary" onclick="document.getElementById('research-drawer').classList.toggle('translate-x-full'); document.getElementById('research-drawer').classList.toggle('w-0'); document.getElementById('research-drawer').classList.toggle('border-l-0');"><span class="material-symbols-outlined text-[18px]">close</span></button>
+</div>
+</div>
+<!-- Drawer Tabs -->
+<div class="flex border-b border-outline-variant bg-surface-container-low">
+<button class="flex-1 py-3 text-label-sm font-label-sm text-primary border-b-2 border-primary text-center">Saved Notes</button>
+<button class="flex-1 py-3 text-label-sm font-label-sm text-secondary hover:text-on-surface border-b-2 border-transparent hover:border-outline-variant transition-colors text-center">Citations</button>
+</div>
+<!-- Drawer Content (Notes List) -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-4">
+<!-- Note Item 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-3 hover:shadow-[0px_4px_12px_rgba(15,23,42,0.05)] transition-shadow cursor-grab group relative">
+<div class="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1">
+<button class="p-1 bg-surface rounded shadow-sm border border-outline-variant text-primary hover:bg-primary-container hover:text-on-primary-container" title="Insert into text"><span class="material-symbols-outlined text-[16px]">add</span></button>
+</div>
+<span class="text-label-sm font-label-sm text-primary bg-primary-container/30 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider mb-2 inline-block">Highlight</span>
+<p class="text-body-sm font-body-sm text-on-surface-variant line-clamp-3 mb-2">"The primary risk of widespread LLM use in academia isn't just plagiarism, but the homogenization of academic thought and style."</p>
+<div class="flex items-center gap-1 text-outline text-[11px] font-label-sm">
+<span class="material-symbols-outlined text-[14px]">menu_book</span>
+                        Source: <i>Smith et al., 2023</i>
+</div>
+</div>
+<!-- Note Item 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-3 hover:shadow-[0px_4px_12px_rgba(15,23,42,0.05)] transition-shadow cursor-grab group relative">
+<div class="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1">
+<button class="p-1 bg-surface rounded shadow-sm border border-outline-variant text-primary hover:bg-primary-container hover:text-on-primary-container" title="Insert into text"><span class="material-symbols-outlined text-[16px]">add</span></button>
+</div>
+<span class="text-label-sm font-label-sm text-tertiary bg-tertiary-container/20 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider mb-2 inline-block">Personal Idea</span>
+<p class="text-body-sm font-body-sm text-on-surface-variant line-clamp-3 mb-2">Need to cross-reference this with the older literature on calculator adoption in the 80s math classrooms. Similar panic, different tool.</p>
+</div>
+<!-- Note Item 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-3 hover:shadow-[0px_4px_12px_rgba(15,23,42,0.05)] transition-shadow cursor-grab group relative">
+<div class="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1">
+<button class="p-1 bg-surface rounded shadow-sm border border-outline-variant text-primary hover:bg-primary-container hover:text-on-primary-container" title="Insert into text"><span class="material-symbols-outlined text-[16px]">add</span></button>
+</div>
+<span class="text-label-sm font-label-sm text-primary bg-primary-container/30 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider mb-2 inline-block">Stat</span>
+<p class="text-body-sm font-body-sm text-on-surface-variant line-clamp-3 mb-2">Over 65% of surveyed students admitted to using generative tools for brainstorming, while only 12% used them for final copy generation.</p>
+<div class="flex items-center gap-1 text-outline text-[11px] font-label-sm">
+<span class="material-symbols-outlined text-[14px]">bar_chart</span>
+                        Source: <i>Internal Survey Data</i>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-outline-variant bg-surface-container-low">
+<button class="w-full py-2 border border-outline-variant rounded text-label-sm font-label-sm text-secondary hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add_circle</span> Add New Note
+                </button>
+</div>
+</aside>
+</div>
+<script>
+        // Simple script to show/hide formatting toolbar on text selection for demo purposes
+        const editor = document.querySelector('.editor-content');
+        const toolbar = document.getElementById('formatting-toolbar');
+
+        document.addEventListener('selectionchange', () => {
+            const selection = window.getSelection();
+            if (selection.toString().length > 0 && selection.anchorNode && editor.contains(selection.anchorNode)) {
+                toolbar.classList.add('active');
+            } else {
+                toolbar.classList.remove('active');
+            }
+        });
+        
+        // Drawer toggle logic
+        document.getElementById('toggle-drawer').addEventListener('click', function() {
+            const drawer = document.getElementById('research-drawer');
+            drawer.classList.toggle('translate-x-full');
+            drawer.classList.toggle('w-0');
+            drawer.classList.toggle('border-l-0');
+        });
+    </script>
+</body></html>

@@ -1,0 +1,33 @@
+{
+  "name": "wikibooklm",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.6.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "concurrently -n backend,worker,frontend -c blue,yellow,magenta \"pnpm --filter backend dev\" \"pnpm --filter backend dev:worker\" \"pnpm --filter frontend dev\"",
+    "build": "pnpm --filter backend build && pnpm --filter frontend build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:migrate": "pnpm --filter backend prisma:migrate",
+    "db:seed": "pnpm --filter backend prisma:seed",
+    "e2e": "playwright test -c e2e/playwright.config.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^22.15.0",
+    "concurrently": "^9.1.2",
+    "typescript": "~5.9.3"
+  },
+  "pnpmOverridesNote": "prisma's bundled studio pulls @types/react 19 into the workspace, and @types/react-dom 18 then resolves against it — which makes every react-router element fail to type-check in the SPA. The app is React 18; the overrides below pin the types to match it.",
+  "pnpm": {
+    "overrides": {
+      "@types/react": "^18.3.18",
+      "@types/react-dom": "^18.3.5"
+    }
+  }
+}

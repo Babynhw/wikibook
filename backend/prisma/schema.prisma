@@ -1,0 +1,382 @@
+// WikiBookLM domain model.
+//
+// The full model is defined in Phase 0 even though only User / Session /
+// PasswordResetToken / AppConfig are exercised yet: later phases then become
+// behavior changes rather than schema redesigns (wiki-docs/plan/phase-0-foundation/design.md).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SourceType {
+  pdf
+  web
+  manual
+}
+
+enum SourceState {
+  processing
+  ready
+  failed
+}
+
+enum ScopeType {
+  source
+  space
+}
+
+enum MessageRole {
+  user
+  assistant
+}
+
+enum NoteOrigin {
+  user
+  saved_answer
+}
+
+/// A member's standing in a space (plan/shared-spaces-v1/design.md "Three roles").
+/// Ordered: owner > editor > viewer. Exactly one owner per space, mirrored in
+/// `Space.ownerId`.
+enum SpaceRole {
+  owner
+  editor
+  viewer
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  lastActiveAt DateTime?
+
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+  spaces              Space[]
+  activities          Activity[]
+  memberships         SpaceMember[]
+  sentInvites         SpaceInvite[]  @relation("InviteSender")
+  addedSources        Source[]       @relation("SourceAddedBy")
+  authoredNotes       Note[]         @relation("NoteAuthor")
+  conversations       Conversation[]
+  notebookSaves       Notebook[]     @relation("NotebookUpdatedBy")
+}
+
+/// Sessions are stored server-side so sign-out genuinely invalidates them (PRD §3).
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  userAgent String?
+  ip        String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Single-use, expiring password-reset token. Only the hash is stored.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Space {
+  id           String    @id @default(cuid())
+  ownerId      String
+  name         String
+  objective    String?
+  /// The owner's "Audience & style" note: who this space's answers are for and
+  /// in what register. Owner-write, all-read; rendered into the assistant's
+  /// *user* turn, never into the system prompt
+  /// (wiki-docs/plan/space-audience-style/design.md).
+  audienceInstruction String?
+  archivedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  /// The owner also has a `SpaceMember` row with role `owner`, so access is one
+  /// lookup; this column stays as the cascade anchor and the transfer target.
+  owner         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members       SpaceMember[]
+  invites       SpaceInvite[]
+  sources       Source[]
+  conversations Conversation[]
+  notes         Note[]
+  notebook      Notebook?
+  activities    Activity[]
+
+  @@index([ownerId])
+}
+
+/// Membership of a user in a space. Every member has a row — the owner
+/// included — and per-member resume state lives here rather than on the space
+/// (plan/shared-spaces-v1/design.md "Every member has a row").
+model SpaceMember {
+  spaceId      String
+  userId       String
+  role         SpaceRole
+  invitedById  String?
+  lastOpenedAt DateTime?
+  createdAt    DateTime  @default(now())
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([spaceId, userId])
+  @@index([userId, lastOpenedAt])
+}
+
+/// An email-bound, single-use, expiring invite. Only a SHA-256 of the token is
+/// stored; "copy the link again" rotates the token on the same row.
+model SpaceInvite {
+  id          String    @id @default(cuid())
+  spaceId     String
+  email       String
+  role        SpaceRole
+  tokenHash   String    @unique
+  invitedById String
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  space     Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  invitedBy User  @relation("InviteSender", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@unique([spaceId, email])
+}
+
+model Source {
+  id           String      @id @default(cuid())
+  spaceId      String
+  type         SourceType
+  title        String
+  author       String?
+  url          String?
+  fileKey      String?
+  /// Set when the source was created by converting a note (PRD §12).
+  originNoteId String?     @unique
+  /// Who brought this evidence in; null once that account is gone.
+  addedById    String?
+  /// Extracted plain text; null until extraction succeeds.
+  content      String?
+  state        SourceState @default(processing)
+  errorMessage String?
+  archivedAt   DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  space      Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  addedBy    User?         @relation("SourceAddedBy", fields: [addedById], references: [id], onDelete: SetNull)
+  originNote Note?         @relation("NoteConvertedToSource", fields: [originNoteId], references: [id], onDelete: SetNull)
+  passages   Passage[]
+  blocks     SourceBlock[]
+  citations  Citation[]
+
+  conversationScopes Conversation[] @relation("ConversationScopeSource")
+
+  @@index([spaceId, state])
+  @@index([spaceId, archivedAt])
+}
+
+/// One located unit of a source's extracted text: the unit the reader renders and
+/// the unit a citation highlight covers (PRD §8). Written in the same transaction
+/// as the source's passages, so the two can never describe different text
+/// (wiki-docs/plan/phase-3-library-reader/design.md "Reader blocks are persisted").
+model SourceBlock {
+  id       String  @id @default(cuid())
+  sourceId String
+  /// 1-based and sequential across the source; the reader's scroll unit.
+  ord      Int
+  text     String
+  /// PDFs only, and structural — set by `getPage(n)`, so it cannot drift (PRD §6).
+  page     Int?
+  /// Web and manual sources; matches the `pN` in `Passage.paragraphRef`.
+  paragraphIndex Int?
+  /// Nearest preceding heading, where the extraction found one.
+  heading  String?
+
+  source Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceId, ord])
+  @@index([sourceId, page])
+}
+
+/// A chunk of exactly one source — passages never mix content across sources (PRD §6).
+model Passage {
+  id             String  @id @default(cuid())
+  sourceId       String
+  ord            Int
+  text           String
+  page           Int?
+  paragraphRef   String?
+  sectionHeading String?
+  /// The `SourceBlock.ord` range this passage was built from — what lets a citation
+  /// highlight resolve by lookup instead of by matching text (PRD §8). Nullable:
+  /// sources ingested before the Phase 3 migration have no blocks, and the reader
+  /// falls back to `page` / `paragraphRef` for them.
+  startBlockOrd  Int?
+  endBlockOrd    Int?
+  /// pgvector column. The dimension matches EMBEDDING_DIM (multilingual-e5-base, 768).
+  embedding      Unsupported("vector(768)")?
+  /// Full-text search vector, maintained by the ingestion pipeline.
+  tsv            Unsupported("tsvector")?
+
+  source    Source     @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  citations Citation[]
+
+  @@unique([sourceId, ord])
+  @@index([sourceId])
+  @@index([tsv(ops: raw("tsvector_ops"))], type: Gin)
+  // No ANN index on `embedding`, and this is settled rather than deferred again.
+  // Prisma has no Hnsw index type, so a hand-written one shows up as drift and
+  // `prisma migrate dev` proposes dropping it on every subsequent migration.
+  // Phases 2 and 3 deferred the question for want of a real query to measure;
+  // Phase 4's retrieval was measured at the §5 ceiling — 50 sources, 300
+  // passages, hybrid retrieval p75 52 ms end to end, of which ~34 ms is the
+  // embedding call, leaving exact KNN plus full-text at roughly 15 ms
+  // against §19's 8 000 ms for the whole answer. Exact KNN is not the bottleneck
+  // at this scale and an index would buy nothing but drift. Revisit only if the
+  // per-space source cap rises by an order of magnitude
+  // (wiki-docs/plan/phase-4-assistant/tasks.md implementation notes).
+}
+
+model Conversation {
+  id            String    @id @default(cuid())
+  spaceId       String
+  /// Conversations are private to the member who started them
+  /// (plan/shared-spaces-v1/design.md "Conversations are private").
+  userId        String?
+  title         String
+  scopeType     ScopeType
+  scopeSourceId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  space       Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  scopeSource Source?   @relation("ConversationScopeSource", fields: [scopeSourceId], references: [id], onDelete: SetNull)
+  messages    Message[]
+  notes       Note[]    @relation("NoteFromConversation")
+
+  @@index([spaceId, userId])
+}
+
+model Message {
+  id             String      @id @default(cuid())
+  conversationId String
+  role           MessageRole
+  content        String
+  /// Scope resolved for this specific request (PRD §9).
+  scopeSnapshot  Json?
+  feedback       String?
+  createdAt      DateTime    @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  citations    Citation[]
+  note         Note?        @relation("NoteFromMessage")
+
+  @@index([conversationId, createdAt])
+}
+
+model Citation {
+  id             String   @id @default(cuid())
+  messageId      String?
+  noteId         String?
+  sourceId       String
+  passageId      String?
+  quotedText     String
+  page           Int?
+  paragraphRef   String?
+  sectionHeading String?
+  /// Set when the underlying passage was reprocessed or removed (PRD §6/§10).
+  stale          Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  note    Note?    @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  source  Source   @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  passage Passage? @relation(fields: [passageId], references: [id], onDelete: SetNull)
+
+  @@index([messageId])
+  @@index([noteId])
+  @@index([sourceId])
+}
+
+model Note {
+  id                  String     @id @default(cuid())
+  spaceId             String
+  title               String
+  contentRich         Json
+  originType          NoteOrigin @default(user)
+  /// Who created the note (the saver, for a saved answer); null once gone.
+  authorId            String?
+  originConversationId String?
+  /// One note per saved answer (PRD §11 anti-duplication).
+  originMessageId     String?    @unique
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  space            Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  author           User?         @relation("NoteAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  originConversation Conversation? @relation("NoteFromConversation", fields: [originConversationId], references: [id], onDelete: SetNull)
+  originMessage    Message?      @relation("NoteFromMessage", fields: [originMessageId], references: [id], onDelete: SetNull)
+  citations        Citation[]
+  convertedSource  Source?       @relation("NoteConvertedToSource")
+
+  @@index([spaceId])
+}
+
+/// Exactly one notebook per space (PRD §13).
+model Notebook {
+  id          String   @id @default(cuid())
+  spaceId     String   @unique
+  contentRich Json
+  /// Who last saved — named in the 409 conflict dialog.
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  space     Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  updatedBy User? @relation("NotebookUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  userId    String
+  spaceId   String?
+  kind      String
+  refId     String?
+  createdAt DateTime @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  space Space? @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([spaceId, createdAt])
+}
+
+/// Runtime-configurable limits (PRD §5) — changing a limit needs no code change.
+model AppConfig {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+.DS_Store
+coverage/
+.turbo/
+.vite/
+# Prisma 7 generates the client into the source tree; it is a build artifact.
+backend/src/generated/
+
+# Playwright (e2e/) artefacts
+e2e/test-results/
+e2e/playwright-report/

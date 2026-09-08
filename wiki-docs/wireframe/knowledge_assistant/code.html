@@ -1,0 +1,375 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Knowledge Assistant - Folio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#283044",
+                        "on-primary-fixed-variant": "#003dab",
+                        "surface-container": "#eaedff",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#b5c4ff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "surface-container-low": "#f2f3ff",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#c3c5d7",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "tertiary-container": "#5f6264",
+                        "primary-fixed-dim": "#b5c4ff",
+                        "on-tertiary-container": "#dbdee0",
+                        "surface-container-highest": "#dae2fd",
+                        "surface-variant": "#dae2fd",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "surface-dim": "#d2d9f4",
+                        "primary-container": "#1a56db",
+                        "secondary-fixed": "#d5e3fc",
+                        "surface": "#faf8ff",
+                        "secondary": "#515f74",
+                        "background": "#faf8ff",
+                        "surface-bright": "#faf8ff",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-surface": "#131b2e",
+                        "primary": "#003fb1",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#57657a",
+                        "on-primary-container": "#d4dcff",
+                        "secondary-container": "#d5e3fc",
+                        "outline": "#737686",
+                        "surface-tint": "#1353d8",
+                        "on-primary": "#ffffff",
+                        "on-background": "#131b2e",
+                        "inverse-on-surface": "#eef0ff",
+                        "surface-container-high": "#e2e7ff",
+                        "on-primary-fixed": "#00174d",
+                        "on-surface-variant": "#434654",
+                        "on-tertiary-fixed": "#191c1e",
+                        "tertiary-fixed": "#e0e3e5",
+                        "tertiary": "#474a4c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "margin-tablet": "32px",
+                        "unit": "8px",
+                        "container-max-width": "1280px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["JetBrains Mono"],
+                        "label-sm": ["JetBrains Mono"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #CBD5E1;
+            border-radius: 20px;
+        }
+        .citation-line {
+            border-left: 3px solid #003fb1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background h-full font-body-md overflow-hidden flex flex-col">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface border-b border-outline-variant flat no shadows">
+<div class="flex items-center gap-6">
+<span class="text-headline-md font-headline-md font-bold text-primary">Folio</span>
+<div class="h-6 w-px bg-outline-variant mx-2"></div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant" style="font-variation-settings: 'FILL' 0;">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded focus:border-primary focus:ring-2 focus:ring-primary-fixed-dim focus:outline-none text-body-sm font-body-sm w-64 transition-all" placeholder="Search workspace..." type="text">
+</div>
+</div>
+<nav class="hidden md:flex gap-8">
+<a class="text-secondary hover:text-primary transition-colors text-label-md font-label-md" href="#">Workspace</a>
+<a class="text-secondary hover:text-primary transition-colors text-label-md font-label-md" href="#">Notebook</a>
+<a class="text-secondary hover:text-primary transition-colors text-label-md font-label-md" href="#">Library</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="px-4 py-2 bg-primary text-on-primary rounded text-label-md font-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors">New Project</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container-highest">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container-highest">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+</button>
+<img alt="Researcher Profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover ml-2" data-alt="A small, professional headshot avatar of an academic researcher with a clean, neutral background, reflecting a focused and calm mood in a modern academic light-mode setting. Muted color palette with sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBt8QmY19eMC-ddinnQKrm6YefoOlqk6tkEf8CgiSD9fVdkMPlDjYjRAufeHl_Rzd8rjxEyIifJ-aKVEj8nZ1vJxBeUFaxZj2-ScbDo5Bx3TjcbEHlmAcSQWlQ-GZ7P_NnYflUfME-22Ug_f8PypEbzuRrK6OH6XAaqBlUCTEcjg6czhTgbCox-YuzD8Q62Zlqw1XH2MWVC251d1QDxuFGJqOtfJydr6W8riIoCRH-391OBCnLQCco">
+</div>
+</header>
+<div class="flex flex-1 pt-16 h-full w-full max-w-[1920px] mx-auto">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-[280px] bg-surface-container-low border-r border-outline-variant flex flex-col py-4 space-y-2 flat no shadows z-40">
+<div class="px-6 mb-6">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">folder_open</span>
+</div>
+<div>
+<h2 class="text-label-md font-label-md font-black text-on-surface">Project Alpha</h2>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Deep Work Mode</p>
+</div>
+</div>
+<button class="w-full py-2 bg-surface text-on-surface border border-outline-variant rounded flex items-center justify-center gap-2 hover:border-primary hover:text-primary transition-colors text-label-md font-label-md">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">add</span>
+                    Add Source
+                </button>
+</div>
+<nav class="flex-1 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+<a class="flex items-center gap-3 text-on-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest rounded-lg transition-all duration-200 ease-in-out text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">library_books</span>
+                    All Sources
+                </a>
+<a class="flex items-center gap-3 text-on-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest rounded-lg transition-all duration-200 ease-in-out text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">format_quote</span>
+                    Citations
+                </a>
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-lg mx-2 px-4 py-3 transition-all duration-200 ease-in-out text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">psychology</span>
+                    Knowledge Assistant
+                </a>
+<a class="flex items-center gap-3 text-on-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest rounded-lg transition-all duration-200 ease-in-out text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">sticky_note_2</span>
+                    Saved Notes
+                </a>
+<a class="flex items-center gap-3 text-on-surface-variant mx-2 px-4 py-3 hover:bg-surface-container-highest rounded-lg transition-all duration-200 ease-in-out text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">edit_note</span>
+                    Drafts
+                </a>
+</nav>
+<div class="mt-auto flex flex-col gap-1 border-t border-outline-variant pt-4 mx-4">
+<a class="flex items-center gap-3 text-on-surface-variant px-2 py-2 hover:bg-surface-container-highest rounded-lg transition-all text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 0;">help_outline</span>
+                    Help
+                </a>
+<a class="flex items-center gap-3 text-on-surface-variant px-2 py-2 hover:bg-surface-container-highest rounded-lg transition-all text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 0;">delete</span>
+                    Trash
+                </a>
+</div>
+</aside>
+<!-- Main Content Area - Split View -->
+<main class="ml-[280px] flex-1 flex h-[calc(100vh-64px)] bg-surface overflow-hidden">
+<!-- Left Pane: Chat Interface -->
+<section class="w-1/2 min-w-[500px] border-r border-outline-variant flex flex-col h-full bg-surface-bright relative">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest z-10">
+<div>
+<h1 class="text-headline-md font-headline-md text-on-surface">Knowledge Assistant</h1>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-1">Synthesizing consensus across 42 documents.</p>
+</div>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded hover:bg-surface-container-low border border-transparent hover:border-outline-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">more_horiz</span>
+</button>
+</div>
+<!-- Chat History -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8 pb-32">
+<!-- User Message -->
+<div class="flex flex-col items-end">
+<div class="bg-surface-container-high text-on-surface rounded-xl rounded-tr-sm px-5 py-4 max-w-[85%] border border-outline-variant">
+<p class="text-body-md font-body-md">What is the consensus on the long-term cognitive effects of spaced repetition in language acquisition compared to massed practice?</p>
+</div>
+</div>
+<!-- AI Response -->
+<div class="flex flex-col items-start">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface-variant">Folio AI</span>
+</div>
+<div class="bg-surface-container-lowest text-on-surface rounded-xl rounded-tl-sm px-6 py-5 max-w-[90%] border border-outline-variant shadow-sm relative group">
+<div class="prose prose-sm max-w-none text-body-md font-body-md leading-relaxed text-on-surface space-y-4">
+<p>The consensus across the analyzed literature strongly favors spaced repetition over massed practice for long-term cognitive retention in language acquisition.</p>
+<p>Several meta-analyses indicate that the "spacing effect" allows for greater neural consolidation during rest periods between sessions <button class="inline-flex items-center justify-center bg-surface-container-low hover:bg-primary-container hover:text-on-primary-container border border-outline-variant text-primary text-[10px] font-label-sm px-1.5 py-0.5 rounded ml-1 transition-colors relative top-[-4px]" onclick="openSourcePanel('src-1')">[1]</button>. Massed practice (cramming), while effective for immediate recall, shows significant decay curves over a 30-day period <button class="inline-flex items-center justify-center bg-surface-container-low hover:bg-primary-container hover:text-on-primary-container border border-outline-variant text-primary text-[10px] font-label-sm px-1.5 py-0.5 rounded ml-1 transition-colors relative top-[-4px]" onclick="openSourcePanel('src-2')">[2]</button>.</p>
+<p>Furthermore, recent neuroimaging studies suggest that spaced retrieval practice actively strengthens hippocampal pathways, leading to more resilient semantic networks compared to the superficial encoding typical of massed practice <button class="inline-flex items-center justify-center bg-surface-container-low hover:bg-primary-container hover:text-on-primary-container border border-outline-variant text-primary text-[10px] font-label-sm px-1.5 py-0.5 rounded ml-1 transition-colors relative top-[-4px]" onclick="openSourcePanel('src-3')">[3]</button>.</p>
+</div>
+<!-- Action Bar for AI Response -->
+<div class="flex gap-2 mt-4 pt-4 border-t border-outline-variant">
+<button class="flex items-center gap-1.5 px-3 py-1.5 text-secondary hover:text-primary hover:bg-surface-container border border-transparent rounded text-label-sm font-label-sm transition-colors">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 0;">content_copy</span>
+                                    Copy
+                                </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-surface text-on-surface border border-outline-variant hover:border-primary hover:text-primary rounded text-label-sm font-label-sm transition-colors ml-auto">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 0;">bookmark_add</span>
+                                    Save as Note
+                                </button>
+</div>
+</div>
+<!-- Source Chips Row -->
+<div class="flex flex-wrap gap-2 mt-3 ml-10">
+<button class="px-3 py-1 bg-surface-container-low border border-outline-variant rounded-full text-label-sm font-label-sm text-secondary hover:bg-surface-container hover:border-primary transition-all flex items-center gap-1" onclick="openSourcePanel('src-1')">
+<span class="text-primary font-bold">1</span> Smith et al., 2021
+                            </button>
+<button class="px-3 py-1 bg-surface-container-low border border-outline-variant rounded-full text-label-sm font-label-sm text-secondary hover:bg-surface-container hover:border-primary transition-all flex items-center gap-1" onclick="openSourcePanel('src-2')">
+<span class="text-primary font-bold">2</span> Davis &amp; Chen, 2019
+                            </button>
+<button class="px-3 py-1 bg-surface-container-low border border-outline-variant rounded-full text-label-sm font-label-sm text-secondary hover:bg-surface-container hover:border-primary transition-all flex items-center gap-1" onclick="openSourcePanel('src-3')">
+<span class="text-primary font-bold">3</span> Kuhl's Neuro lab, 2023
+                            </button>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-surface-bright via-surface-bright to-transparent pt-12">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-fixed-dim transition-all flex flex-col relative p-1">
+<textarea class="w-full bg-transparent border-none focus:ring-0 resize-none p-3 text-body-md font-body-md custom-scrollbar" placeholder="Ask a question about your sources..." rows="2"></textarea>
+<div class="flex justify-between items-center px-2 pb-2">
+<div class="flex gap-1">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded hover:bg-surface-container-low transition-colors" title="Attach file">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">attach_file</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded hover:bg-surface-container-low transition-colors" title="Filter sources">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">filter_list</span>
+</button>
+</div>
+<button class="bg-primary text-on-primary w-8 h-8 rounded flex items-center justify-center hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Pane: Source Panel -->
+<section class="flex-1 bg-surface-container-low flex flex-col h-full relative border-l border-outline-variant" id="source-panel">
+<div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest shrink-0 h-16">
+<div class="flex items-center gap-3 overflow-hidden">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 0;">description</span>
+<div class="truncate">
+<h3 class="text-label-md font-label-md font-bold text-on-surface truncate">Neural Substrates of the Spacing Effect</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant truncate">Smith, J., Roberts, A. (2021) • Journal of Cognitive Psychology</p>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="px-3 py-1.5 bg-surface text-on-surface border border-outline-variant rounded text-label-sm font-label-sm hover:border-primary hover:text-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 0;">open_in_new</span>
+                            Open Source
+                        </button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-8 relative">
+<!-- Progress Tracker Line -->
+<div class="absolute top-0 left-8 right-8 h-0.5 bg-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary w-1/3"></div>
+</div>
+<div class="max-w-2xl mx-auto mt-4">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-8 shadow-sm">
+<!-- Context header -->
+<div class="text-label-sm font-label-sm text-secondary mb-4 pb-2 border-b border-outline-variant flex justify-between">
+<span>Page 14 • Abstract &amp; Introduction</span>
+<span>65% Match</span>
+</div>
+<!-- Document Content with Highlight -->
+<div class="prose prose-slate max-w-none text-body-lg font-body-lg text-on-surface leading-relaxed">
+<p class="text-on-surface-variant mb-4">...observed across multiple longitudinal cohorts.</p>
+<div class="citation-line pl-5 py-1 bg-surface-container-low rounded-r-lg relative group">
+<!-- Highlight Action Tooltip on hover -->
+<div class="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 bg-surface shadow-sm border border-outline-variant rounded p-1">
+<button class="p-1 text-secondary hover:text-primary rounded"><span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 0;">format_underlined</span></button>
+<button class="p-1 text-secondary hover:text-primary rounded"><span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 0;">add_comment</span></button>
+</div>
+<p class="font-medium text-on-surface m-0 leading-relaxed">Specifically, meta-analyses consistently indicate that the "spacing effect"—distributing learning trials over time—allows for greater neural consolidation during rest periods between sessions. This contrasts sharply with massed practice, which yields high immediate performance but rapid decay.</p>
+</div>
+<p class="text-on-surface-variant mt-4">Our fMRI results corroborate behavioral findings, highlighting heightened activity in the medial temporal lobe during distributed retrieval...</p>
+</div>
+</div>
+<!-- Related Snippets Bento Grid -->
+<div class="mt-8">
+<h4 class="text-label-md font-label-md text-on-surface mb-4">Other relevant excerpts in this source:</h4>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg hover:border-primary transition-colors cursor-pointer group">
+<div class="text-label-sm font-label-sm text-secondary mb-2 flex justify-between">
+<span>Page 22</span>
+<span class="material-symbols-outlined text-[16px] opacity-0 group-hover:opacity-100 transition-opacity" style="font-variation-settings: 'FILL' 0;">arrow_forward</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant line-clamp-3">"...suggesting that rest periods are not merely passive decay intervals, but active consolidation windows necessary for long-term encoding..."</p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg hover:border-primary transition-colors cursor-pointer group">
+<div class="text-label-sm font-label-sm text-secondary mb-2 flex justify-between">
+<span>Page 28 (Conclusion)</span>
+<span class="material-symbols-outlined text-[16px] opacity-0 group-hover:opacity-100 transition-opacity" style="font-variation-settings: 'FILL' 0;">arrow_forward</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant line-clamp-3">"...curriculum design must shift from massed module delivery towards interleaved and spaced frameworks to optimize..."</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Custom Annotated Scrollbar Overlay (Visual representation) -->
+<div class="absolute right-0 top-16 bottom-0 w-2 bg-transparent pointer-events-none z-20">
+<div class="absolute top-[20%] w-full h-1 bg-primary rounded-full opacity-80"></div>
+<div class="absolute top-[65%] w-full h-1 bg-tertiary-fixed-dim rounded-full opacity-50"></div>
+<div class="absolute top-[80%] w-full h-1 bg-tertiary-fixed-dim rounded-full opacity-50"></div>
+</div>
+</section>
+</main>
+</div>
+<script>
+        function openSourcePanel(sourceId) {
+            // In a real app, this would fetch the relevant excerpt and update the right panel.
+            // For this UI mockup, it provides a subtle visual cue that an action occurred.
+            const panel = document.getElementById('source-panel');
+            panel.classList.add('opacity-50');
+            setTimeout(() => {
+                panel.classList.remove('opacity-50');
+                // Simulate changing the header based on source
+                const headerTitles = {
+                    'src-1': 'Neural Substrates of the Spacing Effect',
+                    'src-2': 'Memory Decay Curves in Massed Practice',
+                    'src-3': 'Hippocampal Pathways in Semantic Networks'
+                };
+                const titleElement = panel.querySelector('h3');
+                if(headerTitles[sourceId] && titleElement) {
+                     titleElement.textContent = headerTitles[sourceId];
+                }
+            }, 200);
+        }
+    </script>
+</body></html>
