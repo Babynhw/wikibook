@@ -9,6 +9,7 @@ import { useRetrySource, useSource } from '@/features/sources/use-sources';
 import { Block } from '@/features/reader/block';
 import { PageNavigator } from '@/features/reader/page-navigator';
 import { ReaderHeader } from '@/features/reader/reader-header';
+import { useUi } from '@/lib/locale';
 import {
   paragraphStart,
   resolveTarget,
@@ -65,6 +66,7 @@ export function SourceReader({
    */
   showHeader?: boolean;
 }) {
+  const { text } = useUi();
   const navigate = useNavigate();
   const source = useSource(sourceId);
   const retry = useRetrySource(source.data?.spaceId ?? '');
@@ -119,7 +121,7 @@ export function SourceReader({
   );
 
   if (source.isPending) {
-    return <p className="text-sm text-on-surface-variant">Loading this source…</p>;
+    return <p className="text-sm text-on-surface-variant">{text.reader.loading}</p>;
   }
 
   if (source.isError) {
@@ -127,18 +129,18 @@ export function SourceReader({
     return (
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-on-surface">
-          {missing ? 'We could not find that source' : 'We could not load that source'}
+          {missing ? text.reader.notFound : text.reader.loadFailed}
         </h1>
         <p className="mt-2 max-w-prose text-on-surface-variant">
           {missing
-            ? 'It may have been deleted, or the link may belong to a different account.'
+            ? text.reader.missingDescription
             : source.error instanceof ApiError
               ? source.error.message
-              : 'Please try again.'}
+              : text.reader.tryAgain}
         </p>
         {missing ? null : (
           <Button className="mt-4" variant="secondary" onClick={() => void source.refetch()}>
-            Try again
+            {text.reader.tryAgain}
           </Button>
         )}
       </div>
@@ -188,18 +190,18 @@ export function SourceReader({
   const content = (
     <>
       {blocks.isPending ? (
-        <p className="text-sm text-on-surface-variant">Loading this source’s text…</p>
+        <p className="text-sm text-on-surface-variant">{text.reader.loadingText}</p>
       ) : blocks.isError ? (
         <Alert>
           {blocks.error instanceof ApiError
             ? blocks.error.message
-            : 'We could not load this source’s text.'}
+            : text.reader.loadTextFailed}
         </Alert>
       ) : blocks.data.length === 0 ? (
         <p className="text-sm text-on-surface-variant">
           {detail.state === 'ready'
-            ? 'There is no extracted text to show for this part of the source.'
-            : 'No text yet.'}
+            ? text.reader.noExtractedText
+            : text.reader.noTextYet}
         </p>
       ) : (
         <article className="mx-auto flex w-full max-w-2xl flex-col gap-6">

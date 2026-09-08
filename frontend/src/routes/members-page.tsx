@@ -26,11 +26,7 @@ import {
   useSetRole,
   useTransferOwnership,
 } from '@/features/members/use-members';
-
-const ROLE_HELP: Record<GrantableRole, string> = {
-  editor: 'Adds sources, writes and edits notes, edits the notebook.',
-  viewer: 'Reads everything, exports the notebook, asks the assistant. Cannot change anything.',
-};
+import { useUi } from '@/lib/locale';
 
 /**
  * Copies to the clipboard where the browser allows it; the link is also shown
@@ -56,6 +52,7 @@ function RoleSelect({
   onChange: (role: GrantableRole) => void;
   disabled?: boolean;
 }) {
+  const { text } = useUi();
   return (
     <select
       id={id}
@@ -64,14 +61,15 @@ function RoleSelect({
       onChange={(event) => onChange(event.target.value as GrantableRole)}
       className="h-9 rounded-md border border-outline-variant bg-surface-container-lowest px-2 text-sm text-on-surface"
     >
-      <option value="editor">Editor</option>
-      <option value="viewer">Viewer</option>
+      <option value="editor">{text.members.editor}</option>
+      <option value="viewer">{text.members.viewer}</option>
     </select>
   );
 }
 
 /** Invite by email: the link comes back once (design "Invites are email-bound links"). */
 function InviteDialog({ spaceId, onClose }: { spaceId: string; onClose: () => void }) {
+  const { text } = useUi();
   const invite = useInvite(spaceId);
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<GrantableRole>('editor');
@@ -82,11 +80,11 @@ function InviteDialog({ spaceId, onClose }: { spaceId: string; onClose: () => vo
   return (
     <Dialog
       open
-      title={link ? 'Invite link' : 'Invite someone'}
+      title={link ? text.members.inviteLink : text.members.inviteSomeone}
       description={
         link
-          ? 'Send this link to the person you invited. It works only for an account with that email, once, and expires.'
-          : 'They will need to sign in with exactly this email address to accept.'
+          ? text.members.sendLinkDescription
+          : text.members.emailBoundDescription
       }
       onClose={onClose}
     >
@@ -102,18 +100,18 @@ function InviteDialog({ spaceId, onClose }: { spaceId: string; onClose: () => vo
               }}
             >
               <Copy className="size-4" aria-hidden="true" />
-              Copy link
+              {text.members.copy}
             </Button>
             <span role="status" aria-live="polite" className="text-xs text-on-surface-variant">
-              {copied === true ? 'Copied.' : copied === false ? 'Copying was blocked — select the link and copy it by hand.' : ''}
+              {copied === true ? text.members.copied : copied === false ? text.members.copy : ''}
             </span>
           </div>
           <p className="text-xs text-on-surface-variant">
-            This is the only time the link is shown. If it is lost, use “Copy link” beside the pending invite — that makes a new one and retires this one.
+            {text.members.linkShownOnce}
           </p>
           <div className="flex justify-end">
             <Button variant="secondary" onClick={onClose}>
-              Done
+              {text.common.save}
             </Button>
           </div>
         </div>
@@ -128,25 +126,25 @@ function InviteDialog({ spaceId, onClose }: { spaceId: string; onClose: () => vo
             );
           }}
         >
-          <Field label="Email" error={error?.fields.email} type="email" autoComplete="off" required>
+          <Field label={text.common.email} error={error?.fields.email} type="email" autoComplete="off" required>
             <Input value={email} onChange={(event) => setEmail(event.target.value)} />
           </Field>
           <div>
             <label htmlFor="invite-role" className="block text-sm font-medium text-on-surface">
-              Role
+              {text.common.role}
             </label>
             <div className="mt-1 flex items-center gap-3">
               <RoleSelect id="invite-role" value={role} onChange={setRole} />
-              <span className="text-xs text-on-surface-variant">{ROLE_HELP[role]}</span>
+              <span className="text-xs text-on-surface-variant">{role === 'editor' ? text.members.editorHelp : text.members.viewerHelp}</span>
             </div>
           </div>
           {error && !error.fields.email ? <Alert>{error.message}</Alert> : null}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={onClose}>
-              Cancel
+              {text.common.cancel}
             </Button>
             <Button type="submit" disabled={invite.isPending}>
-              {invite.isPending ? 'Creating…' : 'Create invite link'}
+              {invite.isPending ? text.authExtra.joining : text.members.createInvite}
             </Button>
           </div>
         </form>
@@ -172,15 +170,16 @@ function ConfirmDialog({
   onConfirm: () => void;
   onClose: () => void;
 }) {
+  const { text } = useUi();
   return (
     <Dialog open title={title} description={description} onClose={onClose}>
       {error ? <Alert className="mt-4">{error.message}</Alert> : null}
       <div className="mt-6 flex justify-end gap-2">
         <Button variant="secondary" onClick={onClose}>
-          Cancel
+          {text.common.cancel}
         </Button>
         <Button disabled={pending} onClick={onConfirm}>
-          {pending ? 'Working…' : confirmLabel}
+          {pending ? text.common.saving : confirmLabel}
         </Button>
       </div>
     </Dialog>
@@ -202,6 +201,7 @@ function MemberRow({
   onRemove: () => void;
   onTransfer: () => void;
 }) {
+  const { text } = useUi();
   const setRole = useSetRole(spaceId);
   const error = setRole.error instanceof ApiError ? setRole.error : null;
   const manageable = isOwner && member.role !== 'owner';
@@ -212,10 +212,10 @@ function MemberRow({
       <div className="min-w-0">
         <p className="truncate text-sm font-medium text-on-surface">
           {member.name}
-          {isMe ? <span className="text-on-surface-variant"> (you)</span> : null}
+          {isMe ? <span className="text-on-surface-variant"> ({text.common.you})</span> : null}
         </p>
         <p className="truncate font-mono text-xs text-outline">
-          {member.email} · joined <RelativeTime iso={member.joinedAt} />
+          {member.email} · {text.members.joined} <RelativeTime iso={member.joinedAt} />
         </p>
         {error ? <p className="mt-1 text-xs text-error">{error.message}</p> : null}
       </div>
@@ -223,7 +223,7 @@ function MemberRow({
         {manageable ? (
           <>
             <label htmlFor={selectId} className="sr-only">
-              Role for {member.name}
+              {text.members.roleFor.replace('{name}', member.name)}
             </label>
             <RoleSelect
               id={selectId}
@@ -233,11 +233,11 @@ function MemberRow({
             />
             {member.role === 'editor' ? (
               <Button size="sm" variant="ghost" onClick={onTransfer}>
-                Make owner
+                {text.members.makeOwner}
               </Button>
             ) : null}
-            <Button size="sm" variant="ghost" onClick={onRemove} aria-label={`Remove ${member.name}`}>
-              Remove
+            <Button size="sm" variant="ghost" onClick={onRemove} aria-label={text.members.remove.replace('{name}', member.name)}>
+              {text.members.removeLabel}
             </Button>
           </>
         ) : (
@@ -249,6 +249,7 @@ function MemberRow({
 }
 
 function InviteRow({ spaceId, invite }: { spaceId: string; invite: SpaceInvite }) {
+  const { text } = useUi();
   const rotate = useRotateInvite(spaceId);
   const revoke = useRevokeInvite(spaceId);
   const [status, setStatus] = useState<string>('');
@@ -259,7 +260,7 @@ function InviteRow({ spaceId, invite }: { spaceId: string; invite: SpaceInvite }
       <div className="min-w-0">
         <p className="truncate text-sm text-on-surface">{invite.email}</p>
         <p className="font-mono text-xs text-outline">
-          <RoleBadge role={invite.role} /> · expires <RelativeTime iso={invite.expiresAt} />
+          <RoleBadge role={invite.role} /> · {text.members.expires} <RelativeTime iso={invite.expiresAt} />
         </p>
         {error ? <p className="mt-1 text-xs text-error">{error.message}</p> : null}
         {status ? (
@@ -283,10 +284,10 @@ function InviteRow({ spaceId, invite }: { spaceId: string; invite: SpaceInvite }
           }
         >
           <Copy className="size-4" aria-hidden="true" />
-          Copy link
+          {text.members.copyLink}
         </Button>
         <Button size="sm" variant="ghost" disabled={revoke.isPending} onClick={() => revoke.mutate(invite.id)}>
-          Revoke
+          {text.members.revoke}
         </Button>
       </div>
     </li>
@@ -299,6 +300,7 @@ function InviteRow({ spaceId, invite }: { spaceId: string; invite: SpaceInvite }
  * way to leave (shared-spaces-v1).
  */
 export function MembersPage() {
+  const { text } = useUi();
   const { spaceId = '' } = useParams<{ spaceId: string }>();
   const navigate = useNavigate();
   const space = useSpace(spaceId);
@@ -325,29 +327,29 @@ export function MembersPage() {
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-on-surface">Members</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-on-surface">{text.members.title}</h1>
             <p className="mt-1 text-sm text-on-surface-variant">
               {space.data
                 ? permissions.isOwner
-                  ? 'Everyone with access to this space. Invite by email; the link you get works once, for that account only.'
-                  : `Everyone with access to this space. ${space.data.ownerName} owns it and manages who is here.`
-                : 'Everyone with access to this space.'}
+                  ? text.members.ownerDescription
+                  : text.members.memberDescription.replace('{name}', space.data.ownerName)
+                : text.members.generalDescription}
             </p>
           </div>
           {permissions.isOwner ? (
             <Button onClick={() => setInviting(true)}>
               <Plus className="size-4" aria-hidden="true" />
-              Invite
+              {text.members.invite}
             </Button>
           ) : space.data ? (
             <Button variant="secondary" onClick={() => setConfirm({ kind: 'leave' })}>
-              Leave space
+              {text.members.leave}
             </Button>
           ) : null}
         </div>
 
         {members.isPending || space.isPending ? (
-          <div className="space-y-2" aria-busy="true" aria-label="Loading members">
+          <div className="space-y-2" aria-busy="true" aria-label={text.members.loading}>
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
           </div>
@@ -363,14 +365,14 @@ export function MembersPage() {
                 void space.refetch();
               }}
             >
-              Retry
+              {text.common.retry}
             </Button>
           </Alert>
         ) : (
           <>
             <Card>
               <h2 className="text-base font-semibold text-on-surface">
-                {members.data.members.length} {members.data.members.length === 1 ? 'member' : 'members'}
+                {text.members.memberCount.replace('{count}', String(members.data.members.length))}
               </h2>
               <ul className="mt-2 divide-y divide-outline-variant">
                 {members.data.members.map((member) => (
@@ -389,10 +391,10 @@ export function MembersPage() {
 
             {permissions.isOwner ? (
               <Card>
-                <h2 className="text-base font-semibold text-on-surface">Pending invites</h2>
+                <h2 className="text-base font-semibold text-on-surface">{text.members.pendingInvites}</h2>
                 {members.data.invites.length === 0 ? (
                   <p className="mt-2 text-sm text-on-surface-variant">
-                    No invites waiting. An invite appears here until it is accepted, revoked, or expires.
+                    {text.members.noInvites}
                   </p>
                 ) : (
                   <ul className="mt-2 divide-y divide-outline-variant">
@@ -411,9 +413,9 @@ export function MembersPage() {
 
       {confirm?.kind === 'remove' ? (
         <ConfirmDialog
-          title={`Remove ${confirm.member.name}?`}
+          title={text.members.removeQuestion.replace('{name}', confirm.member.name)}
           description="They lose access immediately. Sources and notes they added stay, with their name on them; their conversations with the assistant in this space are deleted."
-          confirmLabel="Remove"
+          confirmLabel={text.members.remove.replace('{name}', '')}
           pending={remove.isPending}
           error={asError(remove.error)}
           onConfirm={() => remove.mutate(confirm.member.userId, { onSuccess: () => setConfirm(null) })}
@@ -423,9 +425,9 @@ export function MembersPage() {
 
       {confirm?.kind === 'transfer' ? (
         <ConfirmDialog
-          title={`Make ${confirm.member.name} the owner?`}
+          title={text.members.transferQuestion.replace('{name}', confirm.member.name)}
           description="They will manage members and be the only one who can archive or delete the space. You stay as an editor."
-          confirmLabel="Transfer ownership"
+          confirmLabel={text.members.transfer}
           pending={transfer.isPending}
           error={asError(transfer.error)}
           onConfirm={() => transfer.mutate(confirm.member.userId, { onSuccess: () => setConfirm(null) })}
@@ -435,9 +437,9 @@ export function MembersPage() {
 
       {confirm?.kind === 'leave' ? (
         <ConfirmDialog
-          title="Leave this space?"
+          title={text.members.leaveQuestion}
           description={`You will lose access as ${roleOf(permissions.role)}. Anything you added stays; your conversations with the assistant here are deleted. Rejoining needs a new invite.`}
-          confirmLabel="Leave space"
+          confirmLabel={text.members.leaveSpace}
           pending={leave.isPending}
           error={asError(leave.error)}
           onConfirm={() => leave.mutate(undefined, { onSuccess: () => navigate('/', { replace: true }) })}

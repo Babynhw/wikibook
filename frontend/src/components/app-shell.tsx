@@ -4,11 +4,14 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { useCurrentUser, useLogout } from '@/features/auth/use-auth';
+import { useUi } from '@/lib/locale';
+import { LanguageToggle } from '@/components/language-toggle';
 
 function Header({ trigger }: { trigger?: ReactNode }) {
   const navigate = useNavigate();
   const { data: user } = useCurrentUser();
   const logout = useLogout();
+  const { text } = useUi();
 
   return (
     // `fixed` at a known 4rem, which is what the rail's `top-16` measures
@@ -28,7 +31,8 @@ function Header({ trigger }: { trigger?: ReactNode }) {
         </div>
         {/* `min-w-0` + `truncate`: at 320 px the email would otherwise be the one
             thing on the page wider than the viewport (PRD §18). */}
-        <div className="flex min-w-0 items-center gap-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <LanguageToggle />
           <span className="min-w-0 truncate text-sm text-on-surface-variant" title={user?.email}>
             {user?.email}
           </span>
@@ -43,7 +47,7 @@ function Header({ trigger }: { trigger?: ReactNode }) {
               })
             }
           >
-            Sign out
+            {text.auth.signOut}
           </Button>
         </div>
       </div>

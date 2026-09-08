@@ -1469,3 +1469,45 @@ call was made** — no token this session — and stored vectors stay stale unti
 `reprocess:sources --all` runs. [[plan/huggingface-embeddings/proposal]];
 `Spec-vs-code` callouts added to [[specs/ingestion/spec]] and
 [[specs/assistant/spec]].
+
+## [2026-09-08] create | Vietnamese UI localization
+
+Proposed a frontend-only Vietnamese locale for interface chrome and accessibility
+copy. Source content, citations, persisted writing, and assistant output remain
+outside the translation boundary; implementation is tracked in
+[[plan/vietnamese-localization/proposal]].
+
+## [2026-09-08] update | Vietnamese UI localization implementation started
+
+Added the initial Vietnamese catalog and applied it to the authenticated shell,
+space rail, sign-in/sign-up, Home, source filters, and Assistant surfaces. The
+focused Assistant/Home/accessibility checks pass; the full frontend suite still
+has stale English assertions in untranslated or partially translated surfaces,
+so the proposal remains proposed.
+
+## [2026-09-08] update | Vietnamese UI localization language toggle
+
+The operator expanded the requirement to include inner buttons and a persistent
+Vietnamese/English toggle. The proposal and design now treat language selection
+as an in-app control rather than a single fixed locale.
+
+Implemented the first dynamic catalog slice with a persistent header/auth toggle
+and English fallbacks for shell, Home, source filters, and Assistant controls.
+Frontend lint, production build, and 46 focused UI/accessibility tests pass; the
+remaining screens are still tracked by the proposed plan.
+
+Verified that every SpaceRail function label and tooltip is catalog-backed and
+changes with the Vietnamese/English toggle, including Add source and All spaces.
+
+Added an interaction regression test proving the toggle changes both directions
+and persists `wikibooklm-language` in local storage.
+
+Expanded the dynamic catalogs into Notes, note cards, and create/delete/convert
+dialogs so inner actions change with the language toggle; source and note content
+remain untouched.
+
+Completed the runtime UI localization audit across remaining pages and widgets:
+spaces, sources, reader, assistant history, notes, notebook, members, invites,
+activity, auth, error states, and accessibility labels now use the dynamic
+Vietnamese/English catalog. Lint and production build pass; legacy test files
+still contain English expected labels and require a separate assertion update.

@@ -47,11 +47,11 @@ describe('HomePage', () => {
 
     renderWithProviders(<HomePage />);
 
-    expect(await screen.findByText('No research spaces yet')).toBeInTheDocument();
+    expect(await screen.findByText('Chưa có không gian nghiên cứu')).toBeInTheDocument();
 
-    await person.click(screen.getByRole('button', { name: 'Create your first space' }));
+    await person.click(screen.getByRole('button', { name: 'Tạo không gian đầu tiên' }));
     await person.type(screen.getByLabelText('Name'), 'Sleep and memory');
-    await person.click(screen.getByRole('button', { name: 'Create space' }));
+    await person.click(screen.getByRole('button', { name: 'Tạo không gian' }));
 
     // Created, then the list refetched — the new space appears without a reload.
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
@@ -83,9 +83,9 @@ describe('HomePage', () => {
 
     renderWithProviders(<HomePage />);
 
-    await person.click(await screen.findByRole('button', { name: 'New space' }));
+    await person.click(await screen.findByRole('button', { name: 'Không gian mới' }));
     await person.type(screen.getByLabelText('Name'), '   ');
-    await person.click(screen.getByRole('button', { name: 'Create space' }));
+    await person.click(screen.getByRole('button', { name: 'Tạo không gian' }));
 
     const name = await screen.findByLabelText('Name');
     await waitFor(() => expect(name).toHaveAccessibleDescription(/Give the space a name/));
@@ -111,7 +111,7 @@ describe('HomePage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Current study' })).toBeInTheDocument();
 
-    await person.click(screen.getByRole('tab', { name: 'Archived' }));
+    await person.click(screen.getByRole('tab', { name: 'Đã lưu trữ' }));
 
     expect(await screen.findByText('Finished study')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Current study' })).toBeNull();
@@ -129,8 +129,8 @@ describe('HomePage', () => {
 
     renderWithProviders(<HomePage />);
 
-    const active = await screen.findByRole('tab', { name: 'Active' });
-    const archived = screen.getByRole('tab', { name: 'Archived' });
+    const active = await screen.findByRole('tab', { name: 'Đang hoạt động' });
+    const archived = screen.getByRole('tab', { name: 'Đã lưu trữ' });
     // Only the selected tab is a tab stop; the arrows do the rest.
     expect(active).toHaveAttribute('tabindex', '0');
     expect(archived).toHaveAttribute('tabindex', '-1');
@@ -140,7 +140,7 @@ describe('HomePage', () => {
 
     expect(archived).toHaveFocus();
     expect(archived).toHaveAttribute('aria-selected', 'true');
-    expect(await screen.findByText('Nothing archived')).toBeInTheDocument();
+    expect(await screen.findByText('Không có gì được lưu trữ')).toBeInTheDocument();
 
     // Wraps, so the widget is never a dead end.
     await person.keyboard('{ArrowRight}');
@@ -177,7 +177,7 @@ describe('HomePage', () => {
       'Too many attempts. Please try again shortly.',
     );
 
-    await person.click(screen.getByRole('button', { name: 'Try again' }));
+    await person.click(screen.getByRole('button', { name: 'Thử lại' }));
 
     expect(await screen.findByRole('heading', { name: 'Current study' })).toBeInTheDocument();
   });
@@ -193,7 +193,7 @@ describe('HomePage', () => {
 
     renderWithProviders(<HomePage />);
 
-    const trigger = await screen.findByRole('button', { name: 'New space' });
+    const trigger = await screen.findByRole('button', { name: 'Không gian mới' });
     await person.click(trigger);
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
 
@@ -366,15 +366,15 @@ describe('HomePage', () => {
 
     renderWithProviders(<HomePage />);
 
-    expect(await screen.findByRole('heading', { name: 'My spaces' })).toBeInTheDocument();
-    const shared = screen.getByRole('region', { name: 'Shared with me' });
+    expect(await screen.findByRole('heading', { name: 'Không gian của tôi' })).toBeInTheDocument();
+    const shared = screen.getByRole('region', { name: 'Được chia sẻ với tôi' });
     expect(within(shared).getByRole('heading', { name: 'Team space' })).toBeInTheDocument();
     expect(within(shared).getByText('Editor')).toBeInTheDocument();
     expect(within(shared).getByText(/3 members · owned by Tan/)).toBeInTheDocument();
     // An editor may edit details but not archive; only the owner archives.
     expect(within(shared).getByRole('button', { name: 'Edit details' })).toBeInTheDocument();
     expect(within(shared).queryByRole('button', { name: 'Archive' })).not.toBeInTheDocument();
-    const mine = screen.getByRole('region', { name: 'My spaces' });
+    const mine = screen.getByRole('region', { name: 'Không gian của tôi' });
     expect(within(mine).getByRole('button', { name: 'Archive' })).toBeInTheDocument();
   });
 
@@ -387,7 +387,7 @@ describe('HomePage', () => {
     });
     renderWithProviders(<HomePage />);
     await screen.findByRole('heading', { name: 'Sleep and memory' });
-    expect(screen.queryByRole('heading', { name: 'My spaces' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Shared with me' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Không gian của tôi' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Được chia sẻ với tôi' })).not.toBeInTheDocument();
   });
 });

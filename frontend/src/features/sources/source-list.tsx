@@ -11,12 +11,7 @@ import { ArchiveSourceDialog } from '@/features/sources/archive-source-dialog';
 import { useRestoreSource, useRetrySource } from '@/features/sources/use-sources';
 import { useCurrentUser } from '@/features/auth/use-auth';
 import { useSpace } from '@/features/spaces/use-spaces';
-
-const TYPE_LABEL: Record<SourceType, string> = {
-  pdf: 'PDF',
-  web: 'Web link',
-  manual: 'Text',
-};
+import { useUi } from '@/lib/locale';
 
 const formatDate = (iso: string) => new Date(iso).toLocaleDateString();
 
@@ -41,6 +36,8 @@ function SourceCard({
   readOnly: boolean;
   newSince: string | null;
 }) {
+  const { text } = useUi();
+  const typeLabels: Record<SourceType, string> = { pdf: 'PDF', web: text.source.webLink, manual: text.source.text };
   const [dialog, setDialog] = useState<Dialog>(null);
   const retry = useRetrySource(source.spaceId);
   const restore = useRestoreSource(source.spaceId);
@@ -77,21 +74,21 @@ function SourceCard({
       </div>
 
       <p className="mt-2 font-mono text-xs text-outline">
-        {TYPE_LABEL[source.type]}
-        {source.author ? ` · ${source.author}` : ''} · added {formatDate(source.createdAt)}
-        {source.addedBy ? ` by ${mine ? 'you' : source.addedBy.name}` : ''}
+        {typeLabels[source.type]}
+        {source.author ? ` · ${source.author}` : ''} · {text.source.addedOn} {formatDate(source.createdAt)}
+        {source.addedBy ? ` ${text.common.by} ${mine ? text.common.you : source.addedBy.name}` : ''}
         {/* Archived is text, not a colour or a dashed border alone (PRD §18). */}
-        {archived ? ' · archived' : ''}
+        {archived ? ` · ${text.common.archived.toLowerCase()}` : ''}
         {isNew ? (
           <span className="ml-2 rounded bg-primary-container px-1.5 py-0.5 text-on-primary-container">
-            New since your last visit
+            {text.source.newSinceVisit}
           </span>
         ) : null}
       </p>
 
       {archived ? (
         <p className="mt-2 text-sm text-on-surface-variant">
-          Archived, so the assistant will not use it as evidence. Nothing was deleted.
+          {text.source.archivedEvidence}
         </p>
       ) : null}
 
@@ -104,14 +101,14 @@ function SourceCard({
       <div className="mt-4 flex flex-wrap gap-2">
         {source.state === 'failed' && !readOnly ? (
           <Button size="sm" disabled={retry.isPending} onClick={() => retry.mutate(source.id)}>
-            {retry.isPending ? 'Retrying…' : 'Retry'}
+            {retry.isPending ? text.common.retrying : text.common.retry}
           </Button>
         ) : null}
         <Link
           to={readerPath(source)}
           className="inline-flex h-8 items-center px-3 text-sm text-primary underline"
         >
-          Open
+          {text.common.open}
         </Link>
         {source.type === 'web' && source.url ? (
           <a
@@ -120,7 +117,7 @@ function SourceCard({
             rel="noreferrer noopener"
             className="inline-flex h-8 items-center px-3 text-sm text-primary underline"
           >
-            Open the original
+            {text.source.openOriginal}
           </a>
         ) : null}
         {source.type === 'pdf' ? (
@@ -132,13 +129,13 @@ function SourceCard({
             rel="noreferrer noopener"
             className="inline-flex h-8 items-center px-3 text-sm text-primary underline"
           >
-            Open the original
+            {text.source.openOriginal}
           </a>
         ) : null}
         {readOnly ? null : (
           <>
             <Button size="sm" variant="ghost" onClick={() => setDialog('edit')}>
-              Edit details
+              {text.common.editDetails}
             </Button>
             {archived ? (
               <Button
@@ -147,18 +144,18 @@ function SourceCard({
                 disabled={restore.isPending}
                 onClick={() => restore.mutate(source.id)}
               >
-                {restore.isPending ? 'Restoring…' : 'Restore'}
+                {restore.isPending ? text.common.restoring : text.common.restore}
               </Button>
             ) : (
               <Button size="sm" variant="ghost" onClick={() => setDialog('archive')}>
-                Archive
+                {text.common.archive}
               </Button>
             )}
           </>
         )}
         {canDelete ? (
           <Button size="sm" variant="ghost" onClick={() => setDialog('delete')}>
-            Delete
+            {text.common.delete}
           </Button>
         ) : null}
       </div>

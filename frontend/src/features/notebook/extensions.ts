@@ -22,7 +22,7 @@ export function isSafeHref(href: string): boolean {
   }
 }
 
-export function notebookExtensions(placeholder = 'Start drafting…') {
+export function notebookExtensions(placeholder: string | (() => string) = 'Start drafting…') {
   return [
     StarterKit.configure({
       heading: { levels: [1, 2, 3] },

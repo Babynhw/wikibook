@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { CitationMarker } from './citation-marker';
 import { useSaveAnswerAsNote } from '@/features/notes/use-notes';
 import { conversationKeys } from './use-conversations';
+import { useUi } from '@/lib/locale';
 
 /**
  * Splits answer text on `[n]` markers so each one renders as a real control
@@ -73,6 +74,7 @@ export function AnswerMessage({
    */
   canSave?: boolean;
 }) {
+  const { text } = useUi();
   const queryClient = useQueryClient();
   const [saveError, setSaveError] = useState<ApiError | null>(null);
   const saveNote = useSaveAnswerAsNote(spaceId);
@@ -143,8 +145,7 @@ export function AnswerMessage({
 
       {truncated ? (
         <p className="mt-3 text-sm text-on-surface-variant">
-          This answer stopped early because it reached its length limit. Ask a narrower question to
-          get the rest.
+          Câu trả lời đã dừng sớm vì đạt giới hạn độ dài. Hãy đặt câu hỏi cụ thể hơn để xem phần còn lại.
         </p>
       ) : null}
 
@@ -152,7 +153,7 @@ export function AnswerMessage({
           answer has none to name, and saying "Sources: none" would be noise. */}
       {message.sourcesUsed.length > 0 ? (
         <p className="mt-3 border-t border-outline-variant pt-3 text-sm text-on-surface-variant">
-          <span className="font-medium text-on-surface">Sources used: </span>
+          <span className="font-medium text-on-surface">{text.assistant.sourcesUsed}: </span>
           {message.sourcesUsed.map((source) => source.title).join(' · ')}
         </p>
       ) : ungrounded ? (
@@ -162,8 +163,8 @@ export function AnswerMessage({
               twelve excerpts can equally mean the citation channel is broken. Say
               what actually happened and let the reader judge. */}
           {message.passagesSent && message.passagesSent > 0
-            ? `${message.passagesSent} excerpts were searched, and this answer cited none of them.`
-            : 'No source in this space matched, so nothing is cited here.'}
+            ? text.assistant.excerptsSearched.replace('{count}', String(message.passagesSent))
+            : text.assistant.noMatchingSource}
         </p>
       ) : null}
 
@@ -173,14 +174,14 @@ export function AnswerMessage({
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant/60 pt-3">
         {onFeedback ? (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-on-surface-variant">Was this useful?</span>
+            <span className="text-xs text-on-surface-variant">{text.assistant.usefulQuestion}</span>
             <Button
               variant="ghost"
               size="sm"
               aria-pressed={message.feedback === 'useful'}
               onClick={() => onFeedback(message.feedback === 'useful' ? null : 'useful')}
             >
-              {message.feedback === 'useful' ? '✓ Useful' : 'Useful'}
+              {message.feedback === 'useful' ? `✓ ${text.assistant.useful}` : text.assistant.useful}
             </Button>
             <Button
               variant="ghost"
@@ -188,7 +189,7 @@ export function AnswerMessage({
               aria-pressed={message.feedback === 'not_useful'}
               onClick={() => onFeedback(message.feedback === 'not_useful' ? null : 'not_useful')}
             >
-              {message.feedback === 'not_useful' ? '✓ Not useful' : 'Not useful'}
+              {message.feedback === 'not_useful' ? `✓ ${text.assistant.notUseful}` : text.assistant.notUseful}
             </Button>
           </div>
         ) : null}
@@ -207,12 +208,12 @@ export function AnswerMessage({
             {saved ? (
               <>
                 <BookmarkCheck className="size-3.5 mr-1 text-primary" />
-                <span className="text-primary font-medium">Saved to notes</span>
+                  <span className="text-primary font-medium">{text.assistant.savedToNotes}</span>
               </>
             ) : (
               <>
                 <BookmarkPlus className="size-3.5 mr-1" />
-                <span>{saveNote.isPending ? 'Saving note…' : 'Save as note'}</span>
+                <span>{saveNote.isPending ? text.assistant.savingNote : text.assistant.saveAsNote}</span>
               </>
             )}
           </Button>

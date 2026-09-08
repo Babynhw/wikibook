@@ -19,6 +19,7 @@ import { AddSourceDialog } from '@/features/sources/add-source-dialog';
 import { canEditSpace } from '@/features/spaces/use-space-role';
 import type { Space } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { useUi } from '@/lib/locale';
 
 /**
  * The space rail (PRD §4) — the 280px panel `DESIGN.md` § Layout & Spacing has
@@ -82,6 +83,7 @@ const ITEM = cn(
  * moment the space arrives.
  */
 export function SpaceRail({ spaceId, space }: { spaceId: string; space?: Space }) {
+  const { text } = useUi();
   const { pathname } = useLocation();
   const base = `/spaces/${spaceId}`;
   // The rail owns its own dialog instance. The library page keeps its own
@@ -110,7 +112,7 @@ export function SpaceRail({ spaceId, space }: { spaceId: string; space?: Space }
           areas, and All spaces are otherwise page content outside any landmark,
           which axe's `region` rule flags and a screen reader's landmark list
           skips. `flex-col` keeps the generated wrapper's column layout. */}
-      <nav aria-label="Space" className="flex h-full min-h-0 w-full flex-col">
+      <nav aria-label={text.nav.space} className="flex h-full min-h-0 w-full flex-col">
       {/* Wireframe: `px-6 pb-6 pt-2`, identity then Add Source, `mb-6` between. */}
       <SidebarHeader className="gap-6 px-6 pt-4 pb-6 group-data-[collapsible=icon]:p-2">
         <div className="flex items-center justify-between gap-3 group-data-[collapsible=icon]:justify-center">
@@ -158,7 +160,7 @@ export function SpaceRail({ spaceId, space }: { spaceId: string; space?: Space }
             onClick={() => setAdding(true)}
           >
             <Plus className="size-4" aria-hidden="true" />
-            Add source
+            {text.nav.addSource}
           </Button>
         ) : null}
       </SidebarHeader>
@@ -168,17 +170,17 @@ export function SpaceRail({ spaceId, space }: { spaceId: string; space?: Space }
         <SidebarGroup className="p-0 py-2">
           <SidebarGroupContent>
             {/* Labelled so the list reads as "Space areas", not "list, 4 items" — PRD §18. */}
-            <SidebarMenu aria-label="Space areas" className="gap-1 px-2">
+            <SidebarMenu aria-label={text.nav.spaceAreas} className="gap-1 px-2">
               <SidebarMenuItem>
                 <SidebarMenuButton
                   size="lg"
                   isActive={onSources}
                   className={ITEM}
-                  tooltip="Sources"
+                  tooltip={text.nav.sources}
                   render={
                     <Link to={base} aria-current={onSources ? 'page' : undefined}>
                       <LibraryBig />
-                      <span>Sources</span>
+                      <span>{text.nav.sources}</span>
                     </Link>
                   }
                 />
@@ -188,14 +190,14 @@ export function SpaceRail({ spaceId, space }: { spaceId: string; space?: Space }
                   size="lg"
                   isActive={onAssistant}
                   className={ITEM}
-                  tooltip="Assistant"
+                  tooltip={text.nav.assistant}
                   render={
                     <Link
                       to={`${base}/assistant`}
                       aria-current={onAssistant ? 'page' : undefined}
                     >
                       <Sparkles />
-                      <span>Assistant</span>
+                      <span>{text.nav.assistant}</span>
                     </Link>
                   }
                 />
@@ -205,14 +207,14 @@ export function SpaceRail({ spaceId, space }: { spaceId: string; space?: Space }
                   size="lg"
                   isActive={onNotes}
                   className={ITEM}
-                  tooltip="Notes"
+                  tooltip={text.nav.notes}
                   render={
                     <Link
                       to={`${base}/notes`}
                       aria-current={onNotes ? 'page' : undefined}
                     >
                       <StickyNote />
-                      <span>Notes</span>
+                      <span>{text.nav.notes}</span>
                     </Link>
                   }
                 />
@@ -222,14 +224,14 @@ export function SpaceRail({ spaceId, space }: { spaceId: string; space?: Space }
                   size="lg"
                   isActive={onNotebook}
                   className={ITEM}
-                  tooltip="Notebook"
+                  tooltip={text.nav.notebook}
                   render={
                     <Link
                       to={`${base}/notebook`}
                       aria-current={onNotebook ? 'page' : undefined}
                     >
                       <NotebookPen />
-                      <span>Notebook</span>
+                      <span>{text.nav.notebook}</span>
                     </Link>
                   }
                 />
@@ -241,11 +243,11 @@ export function SpaceRail({ spaceId, space }: { spaceId: string; space?: Space }
                   size="lg"
                   isActive={onMembers}
                   className={ITEM}
-                  tooltip="Members"
+                  tooltip={text.nav.members}
                   render={
                     <Link to={`${base}/members`} aria-current={onMembers ? 'page' : undefined}>
                       <Users />
-                      <span>Members</span>
+                      <span>{text.nav.members}</span>
                     </Link>
                   }
                 />
@@ -255,11 +257,11 @@ export function SpaceRail({ spaceId, space }: { spaceId: string; space?: Space }
                   size="lg"
                   isActive={onActivity}
                   className={ITEM}
-                  tooltip="Activity"
+                  tooltip={text.nav.activity}
                   render={
                     <Link to={`${base}/activity`} aria-current={onActivity ? 'page' : undefined}>
                       <Activity />
-                      <span>Activity</span>
+                      <span>{text.nav.activity}</span>
                     </Link>
                   }
                 />
@@ -277,11 +279,11 @@ export function SpaceRail({ spaceId, space }: { spaceId: string; space?: Space }
           <SidebarMenuItem>
             <SidebarMenuButton
               className={cn(ITEM, 'h-10')}
-              tooltip="All spaces"
+              tooltip={text.nav.allSpaces}
               render={
                 <Link to="/">
                   <LayoutGrid />
-                  <span>All spaces</span>
+                  <span>{text.nav.allSpaces}</span>
                 </Link>
               }
             />

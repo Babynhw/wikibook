@@ -2,6 +2,7 @@ import { ArrowRight, BookOpen, FileText, Sparkles, Trash2, Upload } from 'lucide
 import type { Note } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { extractDocText } from './doc-text';
+import { useUi } from '@/lib/locale';
 
 /** Snippet join rules: prose runs with spaces, no paragraph breaks. */
 export function extractSnippet(contentRich: unknown): string {
@@ -22,6 +23,7 @@ export function NoteCard({
   /** Archived spaces: Convert and Delete are withheld — the banner says read-only. */
   readOnly?: boolean;
 }) {
+  const { text } = useUi();
   const isSavedAnswer = note.originType === 'saved_answer';
   const snippet = extractSnippet(note.contentRich);
   const updatedDate = new Date(note.updatedAt).toLocaleDateString(undefined, {
@@ -45,19 +47,19 @@ export function NoteCard({
               {isSavedAnswer ? (
                 <>
                   <Sparkles className="size-3" />
-                  <span>Saved Answer</span>
+                  <span>{text.notes.savedAnswer}</span>
                 </>
               ) : (
                 <>
                   <FileText className="size-3" />
-                  <span>User Note</span>
+                  <span>{text.notes.userNote}</span>
                 </>
               )}
             </span>
 
             {note.convertedSource ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-surface-container-highest px-2 py-0.5 text-xs text-on-surface-variant">
-                <span>Converted source</span>
+                <span>{text.notes.convertedSource}</span>
                 <span className="text-[10px] uppercase font-semibold text-primary">
                   ({note.convertedSource.state})
                 </span>
@@ -68,7 +70,7 @@ export function NoteCard({
           {note.citationCount > 0 ? (
             <span className="inline-flex items-center gap-1 text-xs text-on-surface-variant">
               <BookOpen className="size-3" />
-              <span>{note.citationCount} {note.citationCount === 1 ? 'citation' : 'citations'}</span>
+              <span>{note.citationCount} {note.citationCount === 1 ? text.notes.citation : text.notes.citations}</span>
             </span>
           ) : null}
         </div>
@@ -93,8 +95,8 @@ export function NoteCard({
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant/60 pt-3 text-xs text-on-surface-variant">
         <span>
-          Updated {updatedDate}
-          {note.author ? ` · by ${note.author.name}` : note.author === null ? ' · by a former member' : ''}
+          {text.notes.updated} {updatedDate}
+          {note.author ? ` · ${text.notes.by} ${note.author.name}` : note.author === null ? ` · ${text.notes.by} ${text.notes.formerMember}` : ''}
         </span>
 
         <div className="flex flex-wrap items-center gap-1">
@@ -104,24 +106,24 @@ export function NoteCard({
                 variant="ghost"
                 size="sm"
                 onClick={onConvert}
-                title="Convert to evidence source"
+                title={text.notes.convert}
                 aria-label={`Convert note: ${note.title}`}
                 className="h-8 px-2 text-xs"
               >
                 <Upload className="size-3.5 mr-1" />
-                <span>Convert</span>
+                <span>{text.notes.convert}</span>
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onDelete}
-                title="Delete note"
+                title={text.notes.delete}
                 aria-label={`Delete note: ${note.title}`}
                 className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="size-3.5" />
-                <span className="sr-only">Delete note</span>
+                <span className="sr-only">{text.notes.delete}</span>
               </Button>
             </>
           )}
@@ -132,7 +134,7 @@ export function NoteCard({
             onClick={onOpen}
             className="h-8 px-2.5 text-xs font-medium ml-1"
           >
-            <span>Open</span>
+            <span>{text.notes.open}</span>
             <ArrowRight className="size-3 ml-1" />
           </Button>
         </div>

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { AuthLayout } from '@/features/auth/auth-layout';
 import { useLogin } from '@/features/auth/use-auth';
+import { useUi } from '@/lib/locale';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -18,18 +19,19 @@ export function LoginPage() {
   // Controlled inputs: a failed submit must keep what the user typed (PRD §16).
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { text } = useUi();
 
   const error = login.error instanceof ApiError ? login.error : null;
 
   return (
     <AuthLayout
-      title="Sign in"
-      description="Your research spaces, sources, and notebook."
+      title={text.auth.signIn}
+      description={text.auth.researchSpaces}
       footer={
         <>
-          No account yet?{' '}
+          {text.auth.noAccount}{' '}
           <Link to="/register" className="text-primary underline">
-            Create one
+            {text.auth.createAccount}
           </Link>
         </>
       }
@@ -45,7 +47,7 @@ export function LoginPage() {
         {error ? <Alert>{error.message}</Alert> : null}
 
         <Field
-          label="Email"
+          label={text.auth.email}
           type="email"
           name="email"
           autoComplete="email"
@@ -54,7 +56,7 @@ export function LoginPage() {
           onChange={(event) => setEmail(event.target.value)}
         />
         <Field
-          label="Password"
+          label={text.auth.password}
           type="password"
           name="password"
           autoComplete="current-password"
@@ -64,11 +66,11 @@ export function LoginPage() {
         />
 
         <Button type="submit" disabled={login.isPending}>
-          {login.isPending ? 'Signing in…' : 'Sign in'}
+          {login.isPending ? text.auth.signingIn : text.auth.signIn}
         </Button>
 
         <Link to="/forgot" className="text-sm text-on-surface-variant underline">
-          Forgot your password?
+          {text.auth.forgotPassword}
         </Link>
       </form>
     </AuthLayout>

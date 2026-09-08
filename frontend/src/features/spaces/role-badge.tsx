@@ -1,13 +1,18 @@
 import type { SpaceRole } from '@/lib/api';
 import { cn } from '@/lib/utils';
-
-const LABEL: Record<SpaceRole, string> = { owner: 'Owner', editor: 'Editor', viewer: 'Viewer' };
+import { useUi } from '@/lib/locale';
 
 /**
  * A member's role as a chip — DESIGN.md: small-scale, mono, a quiet fill. Text,
  * never colour alone (PRD §18), so every role reads the same way.
  */
 export function RoleBadge({ role, className }: { role: SpaceRole; className?: string }) {
+  const { text } = useUi();
+  const labels: Record<SpaceRole, string> = {
+    owner: text.members.owner,
+    editor: text.members.editor,
+    viewer: text.members.viewer,
+  };
   return (
     <span
       className={cn(
@@ -15,7 +20,7 @@ export function RoleBadge({ role, className }: { role: SpaceRole; className?: st
         className,
       )}
     >
-      {LABEL[role]}
+      {labels[role]}
     </span>
   );
 }

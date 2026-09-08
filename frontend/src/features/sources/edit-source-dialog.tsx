@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { useUpdateSource } from '@/features/sources/use-sources';
+import { useUi } from '@/lib/locale';
 
 /**
  * PRD §7/§8: the title and the author or publisher. Those two fields and no
@@ -18,6 +19,7 @@ export function EditSourceDialog({ source, onClose }: { source: Source; onClose:
   const [title, setTitle] = useState(source.title);
   const [author, setAuthor] = useState(source.author ?? '');
   const update = useUpdateSource(source.spaceId);
+  const { text } = useUi();
   const error = update.error instanceof ApiError ? update.error : null;
 
   const submit = () => {
@@ -27,7 +29,7 @@ export function EditSourceDialog({ source, onClose }: { source: Source; onClose:
   };
 
   return (
-    <Dialog open title="Edit source details" onClose={onClose}>
+    <Dialog open title={text.source.editDetails} onClose={onClose}>
       <form
         className="mt-4 flex flex-col gap-4"
         onSubmit={(event) => {
@@ -36,28 +38,28 @@ export function EditSourceDialog({ source, onClose }: { source: Source; onClose:
         }}
       >
         <Field
-          label="Title"
+          label={text.common.title}
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           error={error?.fields.title}
           required
         />
         <Field
-          label="Author or publisher"
+          label={text.source.authorPublisher}
           value={author}
           onChange={(event) => setAuthor(event.target.value)}
           error={error?.fields.author}
-          hint="Leave empty if the source has no byline."
+          hint={text.source.noByline}
         />
 
         {error && Object.keys(error.fields).length === 0 ? <Alert>{error.message}</Alert> : null}
 
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
-            Cancel
+            {text.common.cancel}
           </Button>
           <Button type="submit" disabled={update.isPending}>
-            {update.isPending ? 'Saving…' : 'Save changes'}
+            {update.isPending ? text.common.saving : text.space.saveChanges}
           </Button>
         </div>
       </form>

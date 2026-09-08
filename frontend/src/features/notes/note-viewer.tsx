@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useUpdateNote } from './use-notes';
 import { extractDocText } from './doc-text';
+import { useUi } from '@/lib/locale';
 
 export function NoteViewer({
   note,
@@ -33,6 +34,7 @@ export function NoteViewer({
   /** Archived spaces: Edit, Convert, and Delete are withheld — the banner says read-only. */
   readOnly?: boolean;
 }) {
+  const { text } = useUi();
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState('');
@@ -180,12 +182,12 @@ export function NoteViewer({
             {isSavedAnswer ? (
               <>
                 <Sparkles className="size-3" />
-                <span>Saved Answer</span>
+                <span>{text.noteViewer.savedAnswer}</span>
               </>
             ) : (
               <>
                 <FileText className="size-3" />
-                <span>User Note</span>
+                <span>{text.noteViewer.userNote}</span>
               </>
             )}
           </span>
@@ -195,7 +197,7 @@ export function NoteViewer({
               to={`/spaces/${note.spaceId}/assistant/${note.originConversationId}`}
               className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
             >
-              <span>View Conversation</span>
+              <span>{text.noteViewer.viewConversation}</span>
               <ExternalLink className="size-3" />
             </Link>
           ) : null}
@@ -207,7 +209,7 @@ export function NoteViewer({
           size="sm"
           onClick={onClose}
           className="h-8 w-8 shrink-0 p-0"
-          aria-label="Close note viewer"
+          aria-label={text.noteViewer.close}
         >
           <X className="size-4" />
         </Button>
@@ -217,7 +219,7 @@ export function NoteViewer({
           but a label change on a focused control is not reliably read. The
           word changes only when the state does. */}
       <p role="status" aria-live="polite" className="sr-only">
-        {update.isPending ? 'Saving note' : update.isSuccess ? 'Note saved' : update.isError ? 'Save failed' : ''}
+        {update.isPending ? text.noteViewer.saving : update.isSuccess ? text.noteViewer.saved : update.isError ? text.noteViewer.saveFailed : ''}
       </p>
 
       {/* Main scrollable body */}
@@ -228,16 +230,16 @@ export function NoteViewer({
         {note.convertedSource ? (
           <div className="rounded-lg border border-primary/30 bg-primary-fixed/20 p-3.5 text-xs text-on-surface-variant flex items-center justify-between">
             <div>
-              <p className="font-semibold text-primary">Converted Evidence Source</p>
+              <p className="font-semibold text-primary">{text.noteViewer.convertedSource}</p>
               <p className="mt-0.5">
-                This note was converted to a manual source ({note.convertedSource.state}).
+                {text.noteViewer.convertedDescription.replace('{state}', note.convertedSource.state)}
               </p>
             </div>
             <Link
               to={`/spaces/${note.spaceId}/sources/${note.convertedSource.id}`}
               className="inline-flex items-center gap-1 rounded bg-primary px-2.5 py-1 text-xs font-medium text-on-primary hover:bg-primary/90"
             >
-              <span>View Source</span>
+                <span>{text.noteViewer.viewSource}</span>
               <ExternalLink className="size-3" />
             </Link>
           </div>
@@ -248,7 +250,7 @@ export function NoteViewer({
           {isEditing ? (
             <div className="space-y-1">
               <label htmlFor={titleId} className="text-xs font-medium text-on-surface-variant">
-                Note Title
+                {text.noteViewer.noteTitle}
               </label>
               <Input
                 id={titleId}
@@ -262,14 +264,14 @@ export function NoteViewer({
           ) : (
             <h2 className="text-xl font-bold text-on-surface leading-snug">{note.title}</h2>
           )}
-          <p className="mt-1 text-xs text-on-surface-variant">Last updated {updatedDate}</p>
+          <p className="mt-1 text-xs text-on-surface-variant">{text.noteViewer.lastUpdated.replace('{date}', updatedDate)}</p>
         </div>
 
         {/* Saved Answer distinction: Original Question */}
         {isSavedAnswer && parsed.question ? (
           <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
-              Original Question
+              {text.noteViewer.originalQuestion}
             </p>
             <p className="mt-1.5 text-sm font-medium text-on-surface">{parsed.question}</p>
           </div>
@@ -280,8 +282,7 @@ export function NoteViewer({
             would truncate the note on save is the failure to avoid (PRD §16). */}
         {tooDeepToEdit ? (
           <Alert>
-            This note is nested too deeply to show in full. What is below is partial, so editing
-            is withheld — saving it would discard the rest.
+            {text.noteViewer.tooDeep}
           </Alert>
         ) : null}
 
@@ -289,14 +290,14 @@ export function NoteViewer({
         <div className="space-y-2">
           {isSavedAnswer ? (
             <p className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
-              Assistant Answer
+              {text.noteViewer.assistantAnswer}
             </p>
           ) : null}
 
           {isEditing ? (
             <div className="space-y-1">
               <label htmlFor={contentId} className="text-xs font-medium text-on-surface-variant">
-                Note content
+                {text.noteViewer.noteContent}
               </label>
               <textarea
                 id={contentId}
@@ -308,7 +309,7 @@ export function NoteViewer({
             </div>
           ) : (
             <div className="whitespace-pre-wrap text-sm leading-relaxed text-on-surface">
-              {parsed.text || <span className="italic text-on-surface-variant">No content</span>}
+              {parsed.text || <span className="italic text-on-surface-variant">{text.noteViewer.noContent}</span>}
             </div>
           )}
         </div>
@@ -318,7 +319,7 @@ export function NoteViewer({
           <div className="space-y-3 border-t border-outline-variant pt-5">
             <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
               <BookOpen className="size-3.5" />
-              <span>Attached Citations ({note.citations.length})</span>
+              <span>{text.noteViewer.attachedCitations.replace('{count}', String(note.citations.length))}</span>
             </div>
 
             <div className="space-y-2.5">
@@ -337,11 +338,11 @@ export function NoteViewer({
                       {citation.stale ? (
                         <span className="inline-flex items-center gap-1 rounded bg-error-container px-2 py-0.5 text-[11px] font-medium text-on-error-container">
                           <AlertTriangle className="size-3" />
-                          <span>Stale / Unavailable</span>
+                          <span>{text.noteViewer.staleUnavailable}</span>
                         </span>
                       ) : (
                         <span className="text-on-surface-variant">
-                          {citation.page ? `Page ${citation.page}` : citation.paragraphRef || ''}
+                          {citation.page ? text.noteViewer.page.replace('{page}', String(citation.page)) : citation.paragraphRef || ''}
                         </span>
                       )}
                     </div>
@@ -355,7 +356,7 @@ export function NoteViewer({
                         to={readerUrl}
                         className="inline-flex items-center gap-1 text-primary hover:underline font-medium"
                       >
-                        <span>Open cited passage in reader</span>
+                        <span>{text.noteViewer.openCitation}</span>
                         <ExternalLink className="size-3" />
                       </Link>
                     </div>
@@ -379,12 +380,12 @@ export function NoteViewer({
                 className="text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="size-3.5 mr-1" />
-                <span>Delete</span>
+                <span>{text.common.delete}</span>
               </Button>
 
               <Button variant="secondary" size="sm" onClick={onConvert}>
                 <Upload className="size-3.5 mr-1" />
-                <span>Convert to source</span>
+                <span>{text.notes.convertToSource}</span>
               </Button>
             </>
           )}
@@ -404,7 +405,7 @@ export function NoteViewer({
           ) : tooDeepToEdit ? null : (
             <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
               <Edit2 className="size-3.5 mr-1" />
-              <span>Edit</span>
+              <span>{text.noteViewer.edit}</span>
             </Button>
           )}
         </div>

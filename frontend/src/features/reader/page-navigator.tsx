@@ -2,6 +2,7 @@ import { useEffect, useId, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useUi } from '@/lib/locale';
 
 /**
  * PDF page navigation (PRD §8, "navigate by PDF page when page data exists").
@@ -27,6 +28,7 @@ export function PageNavigator({
   /** Extra spacing when the pager sits inside a toolbar row. */
   className?: string;
 }) {
+  const { text } = useUi();
   const [draft, setDraft] = useState(String(page));
   const inputId = useId();
 
@@ -42,7 +44,7 @@ export function PageNavigator({
         variant="ghost"
         disabled={page <= 1}
         onClick={() => go(page - 1)}
-        aria-label="Previous page"
+        aria-label={text.reader.previousPage}
       >
         <ChevronLeft className="size-4" />
       </Button>
@@ -56,7 +58,7 @@ export function PageNavigator({
         }}
       >
         <label htmlFor={inputId} className="sr-only">
-          Page
+          {text.reader.page}
         </label>
         <input
           id={inputId}
@@ -74,7 +76,7 @@ export function PageNavigator({
         {/* A single-field form already submits on Enter; this button exists for
             assistive tech that lists a form's controls, not for the pointer. */}
         <button type="submit" className="sr-only">
-          Go to page
+          {text.reader.goToPage}
         </button>
       </form>
 
@@ -83,7 +85,7 @@ export function PageNavigator({
         variant="ghost"
         disabled={page >= pageCount}
         onClick={() => go(page + 1)}
-        aria-label="Next page"
+        aria-label={text.reader.nextPage}
       >
         <ChevronRight className="size-4" />
       </Button>

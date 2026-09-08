@@ -128,14 +128,14 @@ describe('useSourceEvents', () => {
   it('moves a card from processing to ready and announces it', async () => {
     const { listFetches } = renderSpace();
 
-    expect(await screen.findByText('Processing')).toBeInTheDocument();
+    expect(await screen.findByText('Đang xử lý')).toBeInTheDocument();
     const afterFirstLoad = listFetches.count;
 
     FakeEventSource.latest.emit({ sourceId: 'src-1', state: 'ready' });
 
-    await waitFor(() => expect(screen.queryByText('Processing')).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText('Đang xử lý')).not.toBeInTheDocument());
     // §18: the change is announced politely, not left to be noticed.
-    expect(await screen.findByText('Sleep and memory consolidation is ready to use.')).toBeInTheDocument();
+    expect(await screen.findByText('Sleep and memory consolidation đã sẵn sàng để sử dụng.')).toBeInTheDocument();
     // Patched from the payload — the event cost no extra request.
     expect(listFetches.count).toBe(afterFirstLoad);
   });
@@ -144,7 +144,7 @@ describe('useSourceEvents', () => {
   it('moves a card to failed with the reason from the event', async () => {
     renderSpace();
 
-    expect(await screen.findByText('Processing')).toBeInTheDocument();
+    expect(await screen.findByText('Đang xử lý')).toBeInTheDocument();
     FakeEventSource.latest.emit({
       sourceId: 'src-1',
       state: 'failed',
@@ -152,7 +152,7 @@ describe('useSourceEvents', () => {
     });
 
     expect(await screen.findByText('This PDF is password protected.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Thử lại' })).toBeInTheDocument();
   });
 
   /** REQ — the stream has no replay, so every (re)connect refetches the list. */
@@ -199,7 +199,7 @@ describe('useSourceEvents', () => {
   it('refetches when an event names a source this client has not seen', async () => {
     const { listFetches } = renderSpace();
 
-    expect(await screen.findByText('Processing')).toBeInTheDocument();
+    expect(await screen.findByText('Đang xử lý')).toBeInTheDocument();
     const before = listFetches.count;
 
     FakeEventSource.latest.emit({ sourceId: 'src-elsewhere', state: 'ready' });

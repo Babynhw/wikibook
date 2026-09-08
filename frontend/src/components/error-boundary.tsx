@@ -2,9 +2,11 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { ApiError } from '@/lib/api';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { useUi } from '@/lib/locale';
 
 interface Props {
   children: ReactNode;
+  text: ReturnType<typeof useUi>['text'];
 }
 
 interface State {
@@ -17,7 +19,7 @@ interface State {
  * Route-level states (`isPending`/`isError`) still handle expected failures —
  * this only catches the ones nobody planned for.
  */
-export class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundaryInner extends Component<Props, State> {
   state: State = { error: null };
 
   static getDerivedStateFromError(error: Error): State {
@@ -39,13 +41,18 @@ export class ErrorBoundary extends Component<Props, State> {
           <Alert>
             {error instanceof ApiError
               ? error.message
-              : 'Something went wrong on this screen. Reloading usually clears it.'}
+              : this.props.text.authExtra.sessionFailed}
           </Alert>
           <Button className="mt-4" onClick={() => window.location.reload()}>
-            Reload
+            {this.props.text.common.tryAgain}
           </Button>
         </div>
       </div>
     );
   }
+}
+
+export function ErrorBoundary({ children }: { children: ReactNode }) {
+  const { text } = useUi();
+  return <ErrorBoundaryInner text={text}>{children}</ErrorBoundaryInner>;
 }

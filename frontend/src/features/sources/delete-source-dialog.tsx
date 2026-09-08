@@ -3,6 +3,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { useDeleteSource } from '@/features/sources/use-sources';
+import { useUi } from '@/lib/locale';
 
 /**
  * Deleting a source is permanent and takes its answers' citations with it, so it
@@ -20,19 +21,20 @@ export function DeleteSourceDialog({
   onDeleted?: () => void;
 }) {
   const remove = useDeleteSource(source.spaceId);
+  const { text } = useUi();
   const error = remove.error instanceof ApiError ? remove.error : null;
 
   return (
     <Dialog
       open
-      title={`Delete “${source.title}”?`}
-      description="This cannot be undone. The stored file, its passages, and any citations pointing at them are removed with it."
+      title={text.source.deleteQuestion.replace('{title}', source.title)}
+      description={text.source.deleteDescription}
       onClose={onClose}
     >
       {error ? <Alert className="mt-4">{error.message}</Alert> : null}
       <div className="mt-6 flex justify-end gap-2">
         <Button variant="secondary" onClick={onClose}>
-          Cancel
+          {text.common.cancel}
         </Button>
         <Button
           variant="danger"
@@ -46,7 +48,7 @@ export function DeleteSourceDialog({
             })
           }
         >
-          {remove.isPending ? 'Deleting…' : 'Delete source'}
+          {remove.isPending ? text.common.deleting : text.source.deleteSource}
         </Button>
       </div>
     </Dialog>

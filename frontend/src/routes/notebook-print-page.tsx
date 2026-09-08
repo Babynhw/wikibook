@@ -10,6 +10,7 @@ import { useSources } from '@/features/sources/use-sources';
 import { CitationContext, citationLabel } from '@/features/notebook/citation-node';
 import { RenderDoc, collectCitationAttrs } from '@/features/notebook/render-doc';
 import { useNotebook } from '@/features/notebook/use-notebook';
+import { useUi } from '@/lib/locale';
 
 /**
  * `/spaces/:spaceId/notebook/print` — PRD §14's "browser print and save as PDF".
@@ -22,6 +23,7 @@ import { useNotebook } from '@/features/notebook/use-notebook';
  * under its current name without a second serialiser.
  */
 export function NotebookPrintPage() {
+  const { text } = useUi();
   const { spaceId = '' } = useParams<{ spaceId: string }>();
   const space = useSpace(spaceId);
   const notebook = useNotebook(spaceId);
@@ -50,24 +52,24 @@ export function NotebookPrintPage() {
   return (
     <CitationContext.Provider value={{ spaceId, sourceIds: sources ? new Set(sources.keys()) : null }}>
       <div className="mx-auto max-w-2xl px-6 py-10 print:max-w-none print:px-0 print:py-0">
-        <nav className="mb-8 flex items-center justify-between print:hidden" aria-label="Print controls">
+        <nav className="mb-8 flex items-center justify-between print:hidden" aria-label={text.notebook.printControls}>
           <Link
             to={`/spaces/${spaceId}/notebook`}
             className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
-            Back to notebook
+            {text.notebook.backToNotebook}
           </Link>
           <Button size="sm" onClick={() => window.print()} disabled={!ready}>
             <Printer className="size-4" aria-hidden="true" />
-            Print
+            {text.notebook.print}
           </Button>
         </nav>
 
         {error ? (
-          <Alert>{error instanceof ApiError ? error.message : 'The notebook could not be loaded for printing.'}</Alert>
+          <Alert>{error instanceof ApiError ? error.message : text.notebook.printLoadFailed}</Alert>
         ) : !ready ? (
-          <div className="space-y-3" aria-busy="true" aria-label="Preparing print view">
+          <div className="space-y-3" aria-busy="true" aria-label={text.notebook.preparingPrint}>
             <Skeleton className="h-8 w-1/2" />
             <Skeleton className="h-4 w-full" />
           </div>
@@ -77,7 +79,7 @@ export function NotebookPrintPage() {
               <h1 className="text-3xl font-bold tracking-tight text-on-surface">{space.data!.name}</h1>
               {space.data!.objective ? (
                 <p className="mt-2 text-base text-on-surface-variant">
-                  <span className="font-semibold">Objective:</span> {space.data!.objective}
+                  <span className="font-semibold">{text.notebook.objective}</span> {space.data!.objective}
                 </p>
               ) : null}
             </header>
@@ -87,7 +89,7 @@ export function NotebookPrintPage() {
             {citations.length > 0 ? (
               <section className="mt-10 border-t border-outline-variant pt-6" aria-labelledby="print-sources">
                 <h2 id="print-sources" className="text-lg font-bold text-on-surface">
-                  Sources
+                  {text.notebook.sources}
                 </h2>
                 <ol className="mt-3 list-none space-y-2 p-0 text-sm text-on-surface">
                   {citations.map((citation, index) => {
@@ -113,7 +115,7 @@ export function NotebookPrintPage() {
                             </>
                           ) : (
                             <>
-                              {citationLabel(citation)} <span className="text-on-surface-variant">(source removed)</span>
+                              {citationLabel(citation)} <span className="text-on-surface-variant">({text.notebook.sourceRemoved})</span>
                             </>
                           )}
                         </span>

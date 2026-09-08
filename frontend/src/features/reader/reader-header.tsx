@@ -28,12 +28,7 @@ import { ArchiveSourceDialog } from '@/features/sources/archive-source-dialog';
 import { useRestoreSource } from '@/features/sources/use-sources';
 import { useCurrentUser } from '@/features/auth/use-auth';
 import { useSpace } from '@/features/spaces/use-spaces';
-
-const TYPE_LABEL: Record<SourceType, string> = {
-  pdf: 'PDF',
-  web: 'Web link',
-  manual: 'Text',
-};
+import { useUi } from '@/lib/locale';
 
 const TYPE_ICON: Record<SourceType, typeof FileText> = {
   pdf: FileText,
@@ -43,12 +38,8 @@ const TYPE_ICON: Record<SourceType, typeof FileText> = {
 
 const formatDate = (iso: string) => new Date(iso).toLocaleDateString();
 
-/**
- * The host, for the label on "Open the original". Guarded because `new URL` throws:
- * the URL was validated when the source was created, but a render is the wrong place
- * to find that out — there is no error boundary above the reader, so an unparseable
- * row would blank the screen instead of losing one parenthetical.
- */
+/** The host is only used for the original-link label. */
+/** The host is only used for the original-link label. */
 function hostOf(url: string): string | null {
   try {
     return new URL(url).hostname;
@@ -105,6 +96,7 @@ export function ReaderHeader({
   // anything (shared-spaces-v1 "Three roles"). Both queries are already cached.
   const { data: me } = useCurrentUser();
   const { data: space } = useSpace(source.spaceId);
+  const { text } = useUi();
   const mine = source.addedBy != null && me != null && source.addedBy.id === me.id;
   const canDelete = space?.myRole === 'owner' || (space?.myRole === 'editor' && mine);
   const actionsHidden = hideActions || compact;
@@ -151,7 +143,7 @@ export function ReaderHeader({
         rel="noreferrer noopener"
         className={linkClass}
         aria-label={compact ? 'Download' : undefined}
-        title="Open or download the original PDF"
+        title={text.source.originalPdf}
       >
         <Download className="size-4" aria-hidden="true" />
         {compact ? null : 'Download'}
@@ -170,7 +162,6 @@ export function ReaderHeader({
         <DeleteSourceDialog
           source={source}
           onClose={() => setDialog(null)}
-          // Deleting from the reader leaves nothing to read.
           onDeleted={onDeleted}
         />
       ) : null}
@@ -180,21 +171,18 @@ export function ReaderHeader({
   const archivedNotice = (
     <>
       {archived ? (
-        <Alert variant="info" className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <span>
-            This source is archived, so the assistant will not use it as evidence. Nothing has
-            been deleted.
-          </span>
+          <Alert variant="info" className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <span>{text.reader.archiveNotice}</span>
           {readOnly ? null : (
             <Button
               size="sm"
               disabled={restore.isPending}
               onClick={() => restore.mutate(source.id)}
             >
-              {restore.isPending ? 'Restoring…' : 'Restore'}
+              {restore.isPending ? text.common.restoring : text.common.restore}
             </Button>
           )}
-        </Alert>
+                  </Alert>
       ) : null}
       {restoreError ? <Alert className="mt-3">{restoreError.message}</Alert> : null}
     </>
@@ -208,7 +196,7 @@ export function ReaderHeader({
         <div className="flex min-w-0 items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <TypeIcon className="size-5 shrink-0 text-primary" aria-hidden="true" />
-            <span className="sr-only">{TYPE_LABEL[source.type]}</span>
+            <span className="sr-only">{source.type === 'pdf' ? 'PDF' : source.type === 'web' ? text.source.webLink : text.source.text}</span>
             <div className="min-w-0">
               <h1
                 className="truncate font-mono text-base font-bold text-on-surface"
@@ -241,7 +229,7 @@ export function ReaderHeader({
             {/* The type is a chip — DESIGN.md: small-scale, mono, a quiet fill. */}
             <span className="inline-flex items-center gap-1.5 rounded bg-surface-container-highest px-2 py-1 font-mono text-xs font-medium text-on-surface">
               <TypeIcon className="size-4 shrink-0" aria-hidden="true" />
-              {TYPE_LABEL[source.type]}
+              {source.type === 'pdf' ? 'PDF' : source.type === 'web' ? text.source.webLink : text.source.text}
             </span>
 
             {source.author ? (
@@ -250,14 +238,14 @@ export function ReaderHeader({
 
             <span className="inline-flex items-center gap-1.5">
               <CalendarDays className="size-4 shrink-0" aria-hidden="true" />
-              Added {formatDate(source.createdAt)}
-              {source.addedBy ? ` by ${mine ? 'you' : source.addedBy.name}` : ''}
+              {text.reader.added} {formatDate(source.createdAt)}
+              {source.addedBy ? ` ${text.common.by} ${mine ? text.common.you : source.addedBy.name}` : ''}
             </span>
 
             {source.pageCount !== null ? (
               <span className="inline-flex items-center gap-1.5">
                 <BookOpen className="size-4 shrink-0" aria-hidden="true" />
-                {source.pageCount} pages
+                {text.common.pages.replace('{count}', String(source.pageCount))}
               </span>
             ) : null}
 
@@ -271,7 +259,7 @@ export function ReaderHeader({
             {archived ? (
               <span className="inline-flex items-center gap-1.5 font-medium text-on-surface">
                 <Archive className="size-4 shrink-0" aria-hidden="true" />
-                Archived
+                {text.common.archived}
               </span>
             ) : null}
           </div>
@@ -283,7 +271,7 @@ export function ReaderHeader({
           {actionsHidden || readOnly ? null : (
             <Button size="sm" variant="secondary" onClick={() => setDialog('edit')}>
               <Pencil className="size-4" aria-hidden="true" />
-              Edit details
+              {text.common.editDetails}
             </Button>
           )}
 
@@ -292,7 +280,7 @@ export function ReaderHeader({
           {actionsHidden ? null : (
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={<Button size="icon-sm" variant="ghost" aria-label="More actions" />}
+                render={<Button size="icon-sm" variant="ghost" aria-label={text.common.editDetails} />}
               >
                 <MoreVertical className="size-4" aria-hidden="true" />
               </DropdownMenuTrigger>
@@ -300,14 +288,14 @@ export function ReaderHeader({
                 {readOnly || archived ? null : (
                   <DropdownMenuItem onClick={() => setDialog('archive')}>
                     <Archive aria-hidden="true" />
-                    Archive
+                    {text.common.archive}
                   </DropdownMenuItem>
                 )}
                 {readOnly || archived || !canDelete ? null : <DropdownMenuSeparator />}
                 {canDelete ? (
                   <DropdownMenuItem variant="destructive" onClick={() => setDialog('delete')}>
                     <Trash2 aria-hidden="true" />
-                    Delete
+                    {text.common.delete}
                 </DropdownMenuItem>
                 ) : null}
               </DropdownMenuContent>

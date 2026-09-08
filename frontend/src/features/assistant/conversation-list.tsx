@@ -3,6 +3,7 @@ import { Alert } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiError, type ConversationListItem } from '@/lib/api';
+import { useUi } from '@/lib/locale';
 
 /**
  * Every conversation in a space, most recently updated first (PRD §9, REQ-169 /
@@ -34,6 +35,7 @@ export function ConversationList({
   /** Injected by tests; the browser locale otherwise. */
   locale?: string;
 }) {
+  const { text } = useUi();
   if (isPending) {
     return (
       <div aria-busy="true" className="space-y-px" data-testid="conversation-list-loading">
@@ -50,7 +52,7 @@ export function ConversationList({
   if (error) {
     return (
       <Alert>
-        {error instanceof ApiError ? error.message : 'We could not load your conversations.'}
+        {error instanceof ApiError ? error.message : text.common.tryAgain}
       </Alert>
     );
   }
@@ -61,19 +63,17 @@ export function ConversationList({
     return (
       <Card>
         <h2 className="text-base font-semibold text-on-surface">
-          {archived ? 'No conversations yet' : 'Ask your sources'}
+          {archived ? text.activity.none : text.assistant.askSources}
         </h2>
         <p className="mt-2 text-sm text-on-surface-variant">
-          {archived
-            ? 'Nothing was asked in this space before it was archived. Restore it to ask a question.'
-            : 'Every answer here is built from the sources in this space, with a citation you can open beside each claim. Ask a question above to start your first chat.'}
+          {archived ? text.assistant.archived : text.assistant.askSourcesDescription}
         </p>
       </Card>
     );
   }
 
   return (
-    <nav aria-label="Chats">
+    <nav aria-label={text.assistant.askSources}>
       <ul className="divide-y divide-outline-variant">
         {rows.map((conversation) => (
           <li key={conversation.id}>
@@ -89,7 +89,7 @@ export function ConversationList({
                   {/* REQ-171: the scope is visible on the assistant screen. */}
                   {conversation.scopeType === 'source' ? (
                     <span className="shrink-0 rounded-full bg-secondary-container px-2 py-0.5 text-xs font-medium text-on-secondary-container">
-                      Source
+                      {text.nav.sources}
                     </span>
                   ) : null}
                 </span>

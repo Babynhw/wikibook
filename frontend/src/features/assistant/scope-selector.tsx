@@ -1,4 +1,5 @@
 import type { ScopeInput, Source } from '@/lib/api';
+import { useUi } from '@/lib/locale';
 
 /**
  * The retrieval scope, which §9 requires to be **visible at all times** — not
@@ -26,13 +27,14 @@ export function ScopeSelector({
   disabled?: boolean;
   id?: string;
 }) {
+  const { text } = useUi();
   const askable = sources.filter((source) => source.state === 'ready' && source.archivedAt === null);
   const current = value.scopeType === 'source' && value.scopeSourceId ? value.scopeSourceId : 'space';
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       <label htmlFor={id} className="text-sm text-on-surface-variant">
-        Asking about
+        {text.assistant.askingAbout}
       </label>
       <select
         id={id}
@@ -48,10 +50,10 @@ export function ScopeSelector({
         }}
         className="min-w-0 max-w-full rounded-md border border-outline-variant bg-surface-container-lowest px-2 py-1 text-sm text-on-surface disabled:opacity-60"
       >
-        <option value="space">This entire space</option>
+        <option value="space">{text.assistant.entireSpace}</option>
         {askable.map((source) => (
           <option key={source.id} value={source.id}>
-            Only “{source.title}”
+            {text.assistant.onlySource.replace('{title}', source.title)}
           </option>
         ))}
       </select>

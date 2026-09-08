@@ -6,6 +6,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useCreateNote } from './use-notes';
+import { useUi } from '@/lib/locale';
 
 export function CreateNoteDialog({
   spaceId,
@@ -16,6 +17,7 @@ export function CreateNoteDialog({
   onClose: () => void;
   onCreated?: (noteId: string) => void;
 }) {
+  const { text } = useUi();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const create = useCreateNote(spaceId);
@@ -52,18 +54,18 @@ export function CreateNoteDialog({
   return (
     <Dialog
       open
-      title="New Note"
-      description="Create a private working note. Notes are excluded from assistant retrieval until converted to a source."
+      title={text.notes.newNoteTitle}
+      description={text.notes.newNoteDescription}
       onClose={onClose}
     >
       <form onSubmit={handleSubmit} className="mt-4 space-y-4">
         {error ? <Alert>{error.message}</Alert> : null}
 
-        <Field label="Title" error={error?.fields.title}>
+        <Field label={text.notes.titleLabel} error={error?.fields.title}>
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Synthesis of interview findings"
+            placeholder={text.page.noteTitlePlaceholder}
             // No `autoFocus`: it runs before `Dialog` records the opener, which
             // then could not get focus back on close. `Dialog` focuses this anyway.
             required
@@ -71,11 +73,11 @@ export function CreateNoteDialog({
           />
         </Field>
 
-        <Field label="Content (optional)">
+        <Field label={text.notes.contentOptional}>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Write your research notes, ideas, or observations..."
+            placeholder={text.page.noteContentPlaceholder}
             rows={5}
             className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
           />
@@ -83,10 +85,10 @@ export function CreateNoteDialog({
 
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>
-            Cancel
+            {text.notes.cancel}
           </Button>
           <Button type="submit" disabled={create.isPending || !title.trim()}>
-            {create.isPending ? 'Creating…' : 'Create note'}
+            {create.isPending ? text.notes.creating : text.notes.created}
           </Button>
         </div>
       </form>

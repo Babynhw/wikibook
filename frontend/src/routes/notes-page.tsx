@@ -16,12 +16,14 @@ import { NoteViewer } from '@/features/notes/note-viewer';
 import { CreateNoteDialog } from '@/features/notes/create-note-dialog';
 import { DeleteNoteDialog } from '@/features/notes/delete-note-dialog';
 import { ConvertNoteDialog } from '@/features/notes/convert-note-dialog';
+import { useUi } from '@/lib/locale';
 
 /** Long enough that a typed word is one request, short enough to feel live —
  * the same 250 ms `use-source-search.ts` settled on for the library. */
 const SEARCH_DEBOUNCE_MS = 250;
 
 export function NotesPage() {
+  const { text } = useUi();
   const params = useParams<{ spaceId: string }>();
   const spaceId = params.spaceId ?? '';
   const [searchParams, setSearchParams] = useSearchParams();
@@ -77,7 +79,7 @@ export function NotesPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight text-on-surface">Saved Notes</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-on-surface">{text.notes.title}</h1>
               {/* The space's total, not the filtered list length: a badge beside
                   the page title that shrinks while you search reads as though
                   the space lost notes. The filtered count is announced under the
@@ -89,14 +91,14 @@ export function NotesPage() {
               ) : null}
             </div>
             <p className="mt-1 text-sm text-on-surface-variant">
-              Private working materials and answers saved from the Knowledge Assistant.
+              {text.notes.description}
             </p>
           </div>
 
           {permissions.canEdit ? (
             <Button onClick={() => setCreating(true)}>
               <Plus className="size-4 mr-1.5" />
-              <span>New note</span>
+              <span>{text.notes.newNote}</span>
             </Button>
           ) : null}
         </div>
@@ -104,10 +106,10 @@ export function NotesPage() {
         {/* Read-only banner for archived space */}
         {isArchived ? (
           <Alert>
-            This space is archived. Notes are read-only until you restore the space.
+            {text.notes.archived}
           </Alert>
         ) : permissions.isViewer ? (
-          <Alert variant="info">You can read every note here; writing notes needs an editor role.</Alert>
+          <Alert variant="info">{text.notes.viewer}</Alert>
         ) : null}
 
         {/* A ?noteId= that no longer resolves (deleted, foreign, mistyped) must
@@ -126,7 +128,7 @@ export function NotesPage() {
         {notesQuery.data && (notesQuery.data.length > 0 || searchQuery) ? (
           <div className="max-w-md">
             <label htmlFor="notes-search" className="sr-only">
-              Search notes
+              {text.notes.search}
             </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-on-surface-variant pointer-events-none" />
@@ -135,7 +137,7 @@ export function NotesPage() {
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search notes..."
+                placeholder={text.notes.search}
                 className="pl-9"
               />
             </div>
@@ -143,7 +145,7 @@ export function NotesPage() {
                 reader (PRD §18), so the count is announced, not only rendered —
                 the same reason `source-filters.tsx` announces its own. */}
             <p aria-live="polite" className="mt-1.5 font-mono text-xs text-outline">
-              {notesQuery.data.length} {notesQuery.data.length === 1 ? 'note' : 'notes'}
+              {notesQuery.data.length} {notesQuery.data.length === 1 ? text.notes.note : text.notes.notes}
               {debouncedQuery ? ` · matching “${debouncedQuery}”` : ''}
             </p>
           </div>
@@ -160,7 +162,7 @@ export function NotesPage() {
           <Alert>
             {notesQuery.error instanceof ApiError
               ? notesQuery.error.message
-              : 'Could not load saved notes.'}
+              : 'Không thể tải ghi chú đã lưu.'}
           </Alert>
         ) : (
           <NoteList

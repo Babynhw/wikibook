@@ -6,6 +6,7 @@ import { ApiError, type ScopeInput, type Source } from '@/lib/api';
 import { useSources } from '@/features/sources/use-sources';
 import { ScopeSelector } from './scope-selector';
 import { useCreateConversation } from './use-conversations';
+import { useUi } from '@/lib/locale';
 
 /**
  * The history hub's composer. One submit creates the conversation and hands the
@@ -23,6 +24,7 @@ import { useCreateConversation } from './use-conversations';
 export function NewChatComposer({ spaceId, spaceName }: { spaceId: string; spaceName: string }) {
   const navigate = useNavigate();
   const create = useCreateConversation(spaceId);
+  const { text } = useUi();
   const sources = useSources(spaceId);
   const [draft, setDraft] = useState('');
   const [scope, setScope] = useState<ScopeInput>({ scopeType: 'space' });
@@ -33,8 +35,8 @@ export function NewChatComposer({ spaceId, spaceName }: { spaceId: string; space
       ? sources.data?.find((source) => source.id === scope.scopeSourceId)
       : undefined;
   const placeholder = scopedSource
-    ? `Ask a question about “${scopedSource.title}”…`
-    : `Ask a question in ${spaceName}…`;
+    ? `${text.assistant.questionPlaceholder.replace('your sources', `“${scopedSource.title}”`)} `
+    : `${text.assistant.questionPlaceholder.replace('your sources', spaceName)} `;
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -66,7 +68,7 @@ export function NewChatComposer({ spaceId, spaceName }: { spaceId: string; space
       />
       <div className="flex items-end gap-2">
         <label htmlFor="new-chat-question" className="sr-only">
-          Your question
+          {text.assistant.questionLabel}
         </label>
         <textarea
           id="new-chat-question"
@@ -79,7 +81,7 @@ export function NewChatComposer({ spaceId, spaceName }: { spaceId: string; space
           className="flex-1 resize-y rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-2 text-base text-on-surface"
         />
         <Button type="submit" disabled={create.isPending || draft.trim() === ''}>
-          {create.isPending ? 'Starting…' : 'Ask'}
+          {create.isPending ? text.assistant.answeringButton : text.assistant.ask}
         </Button>
       </div>
       {error ? (

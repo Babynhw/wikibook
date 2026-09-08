@@ -17,6 +17,7 @@ import { useSourceEvents } from '@/features/sources/use-source-events';
 import { useSourceSearch } from '@/features/sources/use-source-search';
 import { SourceFilters } from '@/features/sources/source-filters';
 import { useConversations } from '@/features/assistant/use-conversations';
+import { useUi } from '@/lib/locale';
 
 function EmptyRegion({
   title,
@@ -42,23 +43,24 @@ function EmptyRegion({
  * the user walk into the assistant to find out whether anything is there.
  */
 function AssistantRegion({ spaceId }: { spaceId: string }) {
+  const { text } = useUi();
   const conversations = useConversations(spaceId);
   const recent = conversations.data?.[0];
 
   return (
     <Card>
-      <h2 className="text-base font-semibold text-on-surface">Assistant</h2>
+      <h2 className="text-base font-semibold text-on-surface">{text.nav.assistant}</h2>
       <p className="mt-2 text-sm text-on-surface-variant">
         {recent
-          ? `Most recent: “${recent.title}”.`
-          : 'No conversations yet. Once this space has a ready source, you can ask questions and get answers with citations back to the exact passage.'}
+          ? text.space.mostRecent.replace('{title}', recent.title)
+          : text.space.noConversations}
       </p>
       <div className="mt-4">
         <Link
           to={`/spaces/${spaceId}/assistant`}
           className="inline-flex items-center rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm font-medium text-on-surface hover:bg-surface-container-low"
         >
-          Open assistant
+          {text.space.openAssistant}
         </Link>
       </div>
     </Card>
@@ -66,10 +68,11 @@ function AssistantRegion({ spaceId }: { spaceId: string }) {
 }
 
 function NotesRegion({ spaceId, noteCount }: { spaceId: string; noteCount: number }) {
+  const { text } = useUi();
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-on-surface">Notes</h2>
+        <h2 className="text-base font-semibold text-on-surface">{text.nav.notes}</h2>
         {noteCount > 0 ? (
           <span className="rounded-full bg-surface-container-high px-2 py-0.5 text-xs text-on-surface-variant">
             {noteCount}
@@ -78,15 +81,15 @@ function NotesRegion({ spaceId, noteCount }: { spaceId: string; noteCount: numbe
       </div>
       <p className="mt-2 text-sm text-on-surface-variant">
         {noteCount > 0
-          ? 'Answers you kept, and notes you wrote yourself, collect here.'
-          : 'No saved notes yet. Answers you keep — and notes you write yourself — collect here.'}
+          ? text.space.notesDescription
+          : text.space.noNotesDescription}
       </p>
       <div className="mt-4">
         <Link
           to={`/spaces/${spaceId}/notes`}
           className="inline-flex items-center rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm font-medium text-on-surface hover:bg-surface-container-low"
         >
-          Open notes
+          {text.space.openNotes}
         </Link>
       </div>
     </Card>
@@ -108,6 +111,7 @@ function SourceLibrary({
   /** My previous visit, so a source another member added since can say so. */
   newSince: string | null;
 }) {
+  const { text } = useUi();
   const [adding, setAdding] = useState(false);
   const search = useSourceSearch();
   const sources = useSources(spaceId, search.params);
@@ -115,29 +119,29 @@ function SourceLibrary({
   const searching = search.hasQuery || search.filtered;
 
   const addAction = readOnly ? null : (
-    <Button onClick={() => setAdding(true)}>Add source</Button>
+          <Button onClick={() => setAdding(true)}>{text.nav.addSource}</Button>
   );
 
   let body: ReactNode;
   if (sources.isPending) {
     body = (
       <Card>
-        <h2 className="text-base font-semibold text-on-surface">Source library</h2>
-        <p className="mt-2 text-sm text-on-surface-variant">Loading this space’s sources…</p>
+        <h2 className="text-base font-semibold text-on-surface">{text.page.sourceLibrary}</h2>
+        <p className="mt-2 text-sm text-on-surface-variant">{text.page.loadingSources}</p>
       </Card>
     );
   } else if (sources.isError) {
     body = (
       <Card>
-        <h2 className="text-base font-semibold text-on-surface">Source library</h2>
+        <h2 className="text-base font-semibold text-on-surface">{text.page.sourceLibrary}</h2>
         <Alert className="mt-3">
           {sources.error instanceof ApiError
             ? sources.error.message
-            : 'We could not load this space’s sources.'}
+            : text.space.loadSourcesFailed}
         </Alert>
         <div className="mt-4">
           <Button variant="secondary" onClick={() => void sources.refetch()}>
-            Try again
+            {text.common.tryAgain}
           </Button>
         </div>
       </Card>
@@ -149,22 +153,21 @@ function SourceLibrary({
   // invitation to add evidence that is already there.
   else if (sources.data.length === 0 && !searching) {
     body = (
-      <EmptyRegion title="Source library" action={addAction}>
-        No sources yet. PDFs, web articles, and pasted text become the evidence the assistant
-        cites.
+      <EmptyRegion title={text.page.sourceLibrary} action={addAction}>
+        {text.space.noSourcesYet}
       </EmptyRegion>
     );
   } else {
     body = (
     <Card>
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-base font-semibold text-on-surface">Source library</h2>
+        <h2 className="text-base font-semibold text-on-surface">{text.page.sourceLibrary}</h2>
         {addAction}
       </div>
 
       {polling ? (
         <p className="mt-2 text-xs text-outline">
-          Live updates are unavailable, so this list refreshes every few seconds.
+          {text.space.liveUpdatesUnavailable}
         </p>
       ) : null}
 
@@ -175,19 +178,19 @@ function SourceLibrary({
           <div>
             <p className="text-sm text-on-surface-variant">
               {search.hasQuery
-                ? `No sources in this space match “${search.input}”.`
-                : 'No sources match these filters.'}
+                ? text.space.noMatchingSources.replace('{query}', search.input)
+                : text.space.noFilteredSources}
             </p>
             <div className="mt-3 flex gap-2">
               {/* §7 asks for one or the other; which one depends on what is
                   actually applied, so both exist and only the apt one renders. */}
               {search.filtered ? (
                 <Button size="sm" variant="secondary" onClick={search.clearAll}>
-                  Clear filters
+                  {text.space.clearFilters}
                 </Button>
               ) : (
                 <Button size="sm" variant="secondary" onClick={search.clearQuery}>
-                  Clear search
+                  {text.space.clearSearch}
                 </Button>
               )}
             </div>
@@ -219,6 +222,7 @@ function SourceLibrary({
  * answer.
  */
 export function SpacePage() {
+  const { text } = useUi();
   const { id = '' } = useParams();
   const space = useSpace(id);
   const open = useOpenSpace();
@@ -245,7 +249,7 @@ export function SpacePage() {
   if (space.isPending) {
     return (
       <AppShell>
-        <p className="text-sm text-on-surface-variant">Loading this space…</p>
+        <p className="text-sm text-on-surface-variant">{text.page.loadingSpace}</p>
       </AppShell>
     );
   }
@@ -255,22 +259,22 @@ export function SpacePage() {
     return (
       <AppShell>
         <h1 className="text-2xl font-semibold tracking-tight text-on-surface">
-          {notFound ? 'We could not find that space' : 'We could not load that space'}
+          {notFound ? text.space.notFound : text.space.loadFailed}
         </h1>
         <p className="mt-2 max-w-prose text-on-surface-variant">
           {notFound
-            ? 'It may have been removed, or the link may belong to a different account.'
+            ? text.space.missingDescription
             : space.error instanceof ApiError
               ? space.error.message
-              : 'Please try again.'}
+              : text.space.pleaseTryAgain}
         </p>
         <div className="mt-6 flex gap-2">
           <Link to="/" className="text-primary underline">
-            Back to your spaces
+            {text.space.backToSpaces}
           </Link>
           {notFound ? null : (
             <button type="button" className="underline" onClick={() => space.refetch()}>
-              Try again
+              {text.common.tryAgain}
             </button>
           )}
         </div>
@@ -287,8 +291,8 @@ export function SpacePage() {
         <>
           <Alert variant="info" className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <span>
-              This space is archived and read-only. Nothing has been deleted.
-              {permissions.isOwner ? '' : ' Only the owner can restore it.'}
+              {text.space.archivedNotice}
+              {permissions.isOwner ? '' : text.space.ownerRestoreNotice}
             </span>
             {permissions.isOwner ? (
               <Button
@@ -296,7 +300,7 @@ export function SpacePage() {
                 disabled={restore.isPending}
                 onClick={() => restore.mutate(space.data.id)}
               >
-                {restore.isPending ? 'Restoring…' : 'Restore'}
+                {restore.isPending ? text.space.restoring : text.space.restore}
               </Button>
             ) : null}
           </Alert>
@@ -316,24 +320,22 @@ export function SpacePage() {
         <p className="mt-2 flex flex-wrap items-center gap-2 font-mono text-xs text-outline">
           <RoleBadge role={space.data.myRole} />
           <span>
-            {space.data.memberCount} {space.data.memberCount === 1 ? 'member' : 'members'}
-            {space.data.myRole === 'owner' ? '' : ` · owned by ${space.data.ownerName}`}
+            {space.data.memberCount} {space.data.memberCount === 1 ? text.space.member : text.space.members}
+            {space.data.myRole === 'owner' ? '' : ` · ${text.space.ownedBy} ${space.data.ownerName}`}
           </span>
           <Link to={`/spaces/${space.data.id}/members`} className="text-primary underline">
-            Members
+            {text.space.membersLink}
           </Link>
         </p>
       ) : null}
       {permissions.isViewer && !archived ? (
         <Alert variant="info" className="mt-4 max-w-prose">
-          You can read everything here, export the notebook, and ask the assistant. Adding sources
-          and writing notes needs an editor role — ask {space.data.ownerName}.
+          {text.space.viewerNotice.replace('{name}', space.data.ownerName)}
         </Alert>
       ) : null}
 
       <Alert variant="info" className="mt-6 max-w-prose">
-        The assistant only answers from evidence you add. Add a source — a PDF, a web article, or
-        text you paste in — before asking a question, so every answer can be traced to a citation.
+        {text.space.evidenceNotice}
       </Alert>
 
       {/* Settings, not a workspace region, so it sits above the grid rather than
@@ -350,9 +352,7 @@ export function SpacePage() {
 
         <NotesRegion spaceId={space.data.id} noteCount={space.data.noteCount} />
 
-        <EmptyRegion title="Notebook">
-          The notebook is blank. It is where you draft findings, one document per space.
-        </EmptyRegion>
+        <EmptyRegion title={text.nav.notebook}>{text.space.notebookDescription}</EmptyRegion>
       </div>
     </AppShell>
   );

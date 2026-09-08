@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { RelativeTime } from '@/components/relative-time';
 import { useActivity } from '@/features/activity/use-activity';
+import { useUi } from '@/lib/locale';
 
 const HEADING_ID = 'activity-heading';
 
@@ -23,6 +24,7 @@ export function ActivityPanel({
   heading?: string;
 } = {}) {
   const query = useActivity(spaceId);
+  const { text } = useUi();
   const items = query.data?.pages.flatMap((page) => page.items) ?? [];
   const withActor = spaceId !== undefined;
 
@@ -35,20 +37,18 @@ export function ActivityPanel({
 
         {query.isPending ? (
           <p role="status" className="mt-2 text-sm text-on-surface-variant">
-            Loading your recent activity…
+            {text.activity.loading}
           </p>
         ) : query.isError ? (
           <Alert className="mt-2">
-            {query.error instanceof ApiError ? query.error.message : 'We could not load your recent activity.'}{' '}
+            {query.error instanceof ApiError ? query.error.message : text.common.tryAgain}{' '}
             <button type="button" onClick={() => query.refetch()} className="underline">
-              Try again
+              {text.common.tryAgain}
             </button>
           </Alert>
         ) : items.length === 0 ? (
           <p className="mt-2 max-w-prose text-sm text-on-surface-variant">
-            {withActor
-              ? 'Nothing yet. Sources, notes, and members will show up here as the space fills.'
-              : 'Nothing yet. Create a space or add a source and it will show up here.'}
+            {text.activity.none}
           </p>
         ) : (
           <>
@@ -67,7 +67,7 @@ export function ActivityPanel({
                 disabled={query.isFetchingNextPage}
                 onClick={() => query.fetchNextPage()}
               >
-                {query.isFetchingNextPage ? 'Loading more…' : 'Load more'}
+                {query.isFetchingNextPage ? text.activity.loading : text.activity.loadMore}
               </Button>
             ) : null}
           </>

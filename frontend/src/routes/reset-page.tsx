@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { AuthLayout } from '@/features/auth/auth-layout';
 import { useResetPassword } from '@/features/auth/use-auth';
+import { useUi } from '@/lib/locale';
 
 export function ResetPage() {
   const [searchParams] = useSearchParams();
   const reset = useResetPassword();
+  const { text } = useUi();
   // The token arrives in the reset link; it stays editable so a user who pasted
   // a truncated link can fix it.
   const [token, setToken] = useState(searchParams.get('token') ?? '');
@@ -19,18 +21,18 @@ export function ResetPage() {
 
   return (
     <AuthLayout
-      title="Choose a new password"
+      title={text.authExtra.choosePassword}
       footer={
         <Link to="/login" className="text-primary underline">
-          Back to sign in
+          {text.authExtra.backToSignIn}
         </Link>
       }
     >
       {reset.isSuccess ? (
         <Alert variant="info">
-          Your password has been changed and other sessions were signed out.{' '}
+          {text.authExtra.passwordChanged}{' '}
           <Link to="/login" className="text-primary underline">
-            Sign in
+            {text.auth.signIn}
           </Link>
         </Alert>
       ) : (
@@ -45,26 +47,26 @@ export function ResetPage() {
           {error ? <Alert>{error.message}</Alert> : null}
 
           <Field
-            label="Reset token"
+            label={text.authExtra.resetToken}
             name="token"
             value={token}
             error={error?.fields.token}
-            hint="From the reset link in your email."
+            hint={text.authExtra.tokenHint}
             onChange={(event) => setToken(event.target.value)}
           />
           <Field
-            label="New password"
+            label={text.authExtra.newPassword}
             type="password"
             name="password"
             autoComplete="new-password"
             value={password}
-            hint="At least 8 characters."
+            hint={text.auth.atLeastEight}
             error={error?.fields.password}
             onChange={(event) => setPassword(event.target.value)}
           />
 
           <Button type="submit" disabled={reset.isPending}>
-            {reset.isPending ? 'Saving…' : 'Change password'}
+            {reset.isPending ? text.common.saving : text.authExtra.changePassword}
           </Button>
         </form>
       )}

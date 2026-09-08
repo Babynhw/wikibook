@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Card } from '@/components/ui/card';
+import { LanguageToggle } from '@/components/language-toggle';
 
 /** Shared frame for the four unauthenticated forms. */
 export function AuthLayout({
@@ -15,9 +16,10 @@ export function AuthLayout({
 }) {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4 py-12">
-      <p className="mb-8 font-mono text-xs tracking-widest text-on-surface-variant uppercase">
-        WikiBookLM
-      </p>
+      <div className="mb-8 flex items-center justify-between">
+        <p className="font-mono text-xs tracking-widest text-on-surface-variant uppercase">WikiBookLM</p>
+        <LanguageToggle />
+      </div>
       <Card>
         <h1 className="text-2xl font-semibold tracking-tight text-on-surface">{title}</h1>
         {description ? (

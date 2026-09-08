@@ -6,14 +6,9 @@ import { Dialog } from '@/components/ui/dialog';
 import { Field, TextareaField } from '@/components/ui/field';
 import { cn } from '@/lib/utils';
 import { useCreateSource, useUploadSource } from '@/features/sources/use-sources';
+import { useUi } from '@/lib/locale';
 
 type Tab = 'pdf' | 'web' | 'manual';
-
-const TABS: Array<{ id: Tab; label: string }> = [
-  { id: 'pdf', label: 'PDF' },
-  { id: 'web', label: 'Web link' },
-  { id: 'manual', label: 'Text' },
-];
 
 /**
  * Client-side validation mirrors the server's messages, so a rejection reads the
@@ -22,26 +17,26 @@ const TABS: Array<{ id: Tab; label: string }> = [
  */
 const isPdf = (file: File) => file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
 
-function validateWeb(url: string): FieldErrors {
+function validateWeb(url: string, messages: { empty: string; protocol: string; invalid: string }): FieldErrors {
   const value = url.trim();
-  if (value === '') return { url: 'Enter a web address.' };
+  if (value === '') return { url: messages.empty };
   try {
     const parsed = new URL(value);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      return { url: 'Only http:// and https:// web addresses can be added.' };
+      return { url: messages.protocol };
     }
   } catch {
-    return { url: 'Enter a valid web address.' };
+    return { url: messages.invalid };
   }
   return {};
 }
 
-function validateManual(title: string, content: string, author: string): FieldErrors {
+function validateManual(title: string, content: string, author: string, messages: { title: string; content: string; long200: string; long120: string }): FieldErrors {
   const errors: FieldErrors = {};
-  if (title.trim() === '') errors.title = 'Give this text a title.';
-  else if (title.trim().length > 200) errors.title = 'Use at most 200 characters.';
-  if (content.trim() === '') errors.content = 'Add some text to make into a source.';
-  if (author.trim().length > 120) errors.author = 'Use at most 120 characters.';
+  if (title.trim() === '') errors.title = messages.title;
+  else if (title.trim().length > 200) errors.title = messages.long200;
+  if (content.trim() === '') errors.content = messages.content;
+  if (author.trim().length > 120) errors.author = messages.long120;
   return errors;
 }
 
@@ -54,6 +49,12 @@ function validateManual(title: string, content: string, author: string): FieldEr
  * a switch away and back — preserves what the user typed (PRD §16).
  */
 export function AddSourceDialog({ spaceId, onClose }: { spaceId: string; onClose: () => void }) {
+  const { text } = useUi();
+  const tabs: Array<{ id: Tab; label: string }> = [
+    { id: 'pdf', label: 'PDF' },
+    { id: 'web', label: text.source.webLink },
+    { id: 'manual', label: text.source.text },
+  ];
   const [tab, setTab] = useState<Tab>('pdf');
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -86,7 +87,7 @@ export function AddSourceDialog({ spaceId, onClose }: { spaceId: string; onClose
     if (!candidate) return;
     if (!isPdf(candidate)) {
       setFile(null);
-      setLocalErrors({ file: 'Only PDF files can be uploaded.' });
+      setLocalErrors({ file: text.source.onlyPdf });
       return;
     }
     setFile(candidate);
@@ -102,7 +103,7 @@ export function AddSourceDialog({ spaceId, onClose }: { spaceId: string; onClose
   const submit = () => {
     if (tab === 'pdf') {
       if (!file) {
-        setLocalErrors({ file: 'Choose a PDF file.' });
+        setLocalErrors({ file: text.source.choosePdfError });
         return;
       }
       setLocalErrors({});
@@ -111,14 +112,14 @@ export function AddSourceDialog({ spaceId, onClose }: { spaceId: string; onClose
     }
 
     if (tab === 'web') {
-      const errors = validateWeb(url);
+      const errors = validateWeb(url, { empty: text.source.webAddress, protocol: text.source.httpOnly, invalid: text.source.validUrl });
       setLocalErrors(errors);
       if (Object.keys(errors).length > 0) return;
       create.mutate({ type: 'web', url: url.trim() }, { onSuccess: onClose });
       return;
     }
 
-    const errors = validateManual(title, content, author);
+    const errors = validateManual(title, content, author, { title: text.source.titleError, content: text.source.contentError, long200: text.source.tooLong200, long120: text.source.tooLong120 });
     setLocalErrors(errors);
     if (Object.keys(errors).length > 0) return;
     create.mutate(
@@ -135,12 +136,12 @@ export function AddSourceDialog({ spaceId, onClose }: { spaceId: string; onClose
   return (
     <Dialog
       open
-      title="Add a source"
-      description="Sources are the evidence the assistant is allowed to cite. Processing runs in the background — you can keep working."
+      title={text.source.add}
+      description={text.source.addDescription}
       onClose={onClose}
     >
-      <div role="tablist" aria-label="Source kind" className="mt-4 flex gap-1 border-b border-outline-variant">
-        {TABS.map(({ id, label }, index) => (
+      <div role="tablist" aria-label={text.source.kind} className="mt-4 flex gap-1 border-b border-outline-variant">
+        {tabs.map(({ id, label }, index) => (
           <button
             key={id}
             type="button"
@@ -161,7 +162,7 @@ export function AddSourceDialog({ spaceId, onClose }: { spaceId: string; onClose
               if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
               event.preventDefault();
               const step = event.key === 'ArrowRight' ? 1 : -1;
-              const next = TABS[(index + step + TABS.length) % TABS.length]!;
+              const next = tabs[(index + step + tabs.length) % tabs.length]!;
               chooseTab(next.id);
               document.getElementById(`${baseId}-tab-${next.id}`)?.focus();
             }}
@@ -207,7 +208,7 @@ export function AddSourceDialog({ spaceId, onClose }: { spaceId: string; onClose
                 htmlFor={`${baseId}-file`}
                 className="cursor-pointer font-medium text-primary underline"
               >
-                Choose a PDF
+                {text.source.choosePdf}
               </label>
               <input
                 ref={fileInputRef}
@@ -222,7 +223,7 @@ export function AddSourceDialog({ spaceId, onClose }: { spaceId: string; onClose
                 }
               />
               <p className="mt-1 text-sm text-on-surface-variant">
-                {file ? file.name : 'or drop one here. Text-based PDFs only — scans have no text to read.'}
+                {file ? file.name : text.source.dropPdf}
               </p>
             </div>
             {errorFor('file') ? (
@@ -235,12 +236,12 @@ export function AddSourceDialog({ spaceId, onClose }: { spaceId: string; onClose
 
         {tab === 'web' ? (
           <Field
-            label="Web address"
+            label={text.source.webAddress}
             name="url"
             value={url}
             autoComplete="off"
             placeholder="https://"
-            hint="The article is fetched and its readable text is kept."
+            hint={text.source.webHint}
             error={errorFor('url')}
             onChange={(event) => setUrl(event.target.value)}
           />
@@ -249,7 +250,7 @@ export function AddSourceDialog({ spaceId, onClose }: { spaceId: string; onClose
         {tab === 'manual' ? (
           <>
             <Field
-              label="Title"
+              label={text.common.title}
               name="title"
               value={title}
               autoComplete="off"
@@ -257,20 +258,20 @@ export function AddSourceDialog({ spaceId, onClose }: { spaceId: string; onClose
               onChange={(event) => setTitle(event.target.value)}
             />
             <TextareaField
-              label="Text"
+              label={text.source.text}
               name="content"
               rows={6}
               value={content}
-              hint="Paste or type the passage. What you enter is kept as the original."
+              hint={text.source.textHint}
               error={errorFor('content')}
               onChange={(event) => setContent(event.target.value)}
             />
             <Field
-              label="Author"
+              label={text.common.author}
               name="author"
               value={author}
               autoComplete="off"
-              hint="Optional."
+              hint={text.source.optional}
               error={errorFor('author')}
               onChange={(event) => setAuthor(event.target.value)}
             />
@@ -279,10 +280,10 @@ export function AddSourceDialog({ spaceId, onClose }: { spaceId: string; onClose
 
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
-            Cancel
+            {text.common.cancel}
           </Button>
           <Button type="submit" disabled={pending}>
-            {pending ? 'Adding…' : 'Add source'}
+            {pending ? text.common.saving : text.source.add}
           </Button>
         </div>
       </form>

@@ -3,6 +3,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { useArchiveSource } from '@/features/sources/use-sources';
+import { useUi } from '@/lib/locale';
 
 /**
  * Archiving withdraws a source from the assistant's evidence without deleting
@@ -14,25 +15,26 @@ import { useArchiveSource } from '@/features/sources/use-sources';
  */
 export function ArchiveSourceDialog({ source, onClose }: { source: Source; onClose: () => void }) {
   const archive = useArchiveSource(source.spaceId);
+  const { text } = useUi();
   const error = archive.error instanceof ApiError ? archive.error : null;
 
   return (
     <Dialog
       open
-      title={`Archive “${source.title}”?`}
-      description="It stays in this space and nothing is deleted, but the assistant will stop using it as evidence. You can restore it at any time from Show archived."
+      title={text.source.archiveQuestion.replace('{title}', source.title)}
+      description={text.source.archiveDescription}
       onClose={onClose}
     >
       {error ? <Alert className="mt-4">{error.message}</Alert> : null}
       <div className="mt-6 flex justify-end gap-2">
         <Button variant="secondary" onClick={onClose}>
-          Cancel
+          {text.common.cancel}
         </Button>
         <Button
           disabled={archive.isPending}
           onClick={() => archive.mutate(source.id, { onSuccess: onClose })}
         >
-          {archive.isPending ? 'Archiving…' : 'Archive source'}
+          {archive.isPending ? text.common.archiving : text.source.archiveSource}
         </Button>
       </div>
     </Dialog>

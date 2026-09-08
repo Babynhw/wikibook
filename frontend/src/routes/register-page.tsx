@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { AuthLayout } from '@/features/auth/auth-layout';
 import { useRegister } from '@/features/auth/use-auth';
+import { useUi } from '@/lib/locale';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -13,18 +14,19 @@ export function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { text } = useUi();
 
   const error = register.error instanceof ApiError ? register.error : null;
 
   return (
     <AuthLayout
-      title="Create your account"
+      title={text.auth.createYourAccount}
       footer={
         <>
-          Already have one?{' '}
-          <Link to="/login" className="text-primary underline">
-            Sign in
-          </Link>
+          {text.auth.alreadyHaveOne}{' '}
+           <Link to="/login" className="text-primary underline">
+            {text.auth.signIn}
+           </Link>
         </>
       }
     >
@@ -42,7 +44,7 @@ export function RegisterPage() {
         {error ? <Alert>{error.message}</Alert> : null}
 
         <Field
-          label="Name"
+          label={text.auth.name}
           name="name"
           autoComplete="name"
           value={name}
@@ -50,7 +52,7 @@ export function RegisterPage() {
           onChange={(event) => setName(event.target.value)}
         />
         <Field
-          label="Email"
+          label={text.auth.email}
           type="email"
           name="email"
           autoComplete="email"
@@ -59,18 +61,18 @@ export function RegisterPage() {
           onChange={(event) => setEmail(event.target.value)}
         />
         <Field
-          label="Password"
+          label={text.auth.password}
           type="password"
           name="password"
           autoComplete="new-password"
           value={password}
-          hint="At least 8 characters."
+          hint={text.auth.atLeastEight}
           error={error?.fields.password}
           onChange={(event) => setPassword(event.target.value)}
         />
 
         <Button type="submit" disabled={register.isPending}>
-          {register.isPending ? 'Creating your account…' : 'Create account'}
+          {register.isPending ? text.auth.creatingAccount : text.auth.createAccount}
         </Button>
       </form>
     </AuthLayout>

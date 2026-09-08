@@ -16,6 +16,7 @@ import { NewChatComposer } from '@/features/assistant/new-chat-composer';
 import { useConversation, useConversations } from '@/features/assistant/use-conversations';
 import { ReaderHeader } from '@/features/reader/reader-header';
 import { SourceReader } from '@/features/reader/source-reader';
+import { useUi } from '@/lib/locale';
 
 /**
  * `/spaces/:spaceId/assistant/:conversationId?`
@@ -35,6 +36,7 @@ import { SourceReader } from '@/features/reader/source-reader';
  * presentations.
  */
 export function AssistantPage() {
+  const { text } = useUi();
   const { spaceId = '', conversationId = '' } = useParams();
   const space = useSpace(spaceId);
   const active = useConversation(conversationId);
@@ -129,10 +131,10 @@ export function AssistantPage() {
             <Alert>
               {active.error instanceof ApiError
                 ? active.error.message
-                : 'We could not load this conversation.'}
+                    : 'Không thể tải cuộc trò chuyện này.'}
             </Alert>
           ) : (
-            <p className="text-sm text-on-surface-variant">Loading this conversation…</p>
+            <p className="text-sm text-on-surface-variant">{text.assistant.loading}</p>
           )}
         </Card>
 
@@ -208,6 +210,7 @@ export function AssistantPage() {
  * the list stays: reading a conversation is always allowed (REQ-174).
  */
 function AssistantHub({ spaceId, space }: { spaceId: string; space: Space | undefined }) {
+  const { text } = useUi();
   const conversations = useConversations(spaceId);
   const archived = space !== undefined && space.archivedAt !== null;
 
@@ -216,9 +219,9 @@ function AssistantHub({ spaceId, space }: { spaceId: string; space: Space | unde
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
         <div>
           <Link to={`/spaces/${spaceId}`} className="text-sm text-on-surface-variant hover:underline">
-            ← {space?.name ?? 'Space'}
+            ← {space?.name ?? text.nav.space}
           </Link>
-          <h1 className="text-xl font-semibold text-on-surface">Assistant</h1>
+          <h1 className="text-xl font-semibold text-on-surface">{text.nav.assistant}</h1>
         </div>
 
         {/* No composer until the space is known: one that mounted for an
@@ -227,14 +230,14 @@ function AssistantHub({ spaceId, space }: { spaceId: string; space: Space | unde
         {space === undefined ? (
           <Skeleton className="h-20 w-full" data-testid="composer-loading" />
         ) : archived ? (
-          <Alert>This space is archived. Restore it to ask new questions.</Alert>
+          <Alert>{text.assistant.archived}</Alert>
         ) : (
           <NewChatComposer spaceId={spaceId} spaceName={space.name} />
         )}
 
         <section aria-labelledby="chats-heading">
           <h2 id="chats-heading" className="mb-2 text-sm font-medium text-on-surface-variant">
-            Chats
+            {text.assistant.chats}
           </h2>
           <ConversationList
             conversations={conversations.data}

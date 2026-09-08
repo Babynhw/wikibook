@@ -120,7 +120,7 @@ describe('assistant pane', () => {
       screen.getByRole('button', { name: 'Citation 2: Site B Report, Page 3' }),
     ).toBeInTheDocument();
     // §9 requires the answer to identify the sources it used.
-    expect(screen.getByText(/Sources used:/)).toBeInTheDocument();
+    expect(screen.getByText(/Nguồn đã dùng:/)).toBeInTheDocument();
   });
 
   it('streams deltas in order while the answer is still arriving', async () => {
@@ -135,9 +135,9 @@ describe('assistant pane', () => {
     ]) });
     renderWithProviders(<AssistantPane conversation={conversation} spaceId="s1" />);
 
-    const box = await screen.findByLabelText('Your question');
+    const box = await screen.findByLabelText('Câu hỏi của bạn');
     await userEvent.type(box, 'Did they feel pressure?');
-    await userEvent.click(screen.getByRole('button', { name: 'Ask' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Hỏi' }));
 
     // Deltas concatenate in arrival order, not as separate paragraphs.
     await waitFor(() => {
@@ -154,20 +154,20 @@ describe('assistant pane', () => {
       <AssistantPane conversation={conversation} spaceId="s1" />,
     );
 
-    const box = await screen.findByLabelText('Your question');
+    const box = await screen.findByLabelText('Câu hỏi của bạn');
     await userEvent.type(box, 'Did they feel pressure?');
-    await userEvent.click(screen.getByRole('button', { name: 'Ask' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Hỏi' }));
 
     // Twenty seconds of "Searching your sources…" on a model that started
     // immediately is what this replaces.
-    await waitFor(() => expect(screen.getByText('Thinking…')).toBeInTheDocument());
-    expect(screen.queryByText('Searching your sources…')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('Đang suy nghĩ…')).toBeInTheDocument());
+    expect(screen.queryByText('Đang tìm trong nguồn tài liệu…')).not.toBeInTheDocument();
     expect(screen.getByText(/Weighing excerpt 0/)).toBeInTheDocument();
 
     // A state, not the reasoning: a 337-chunk reasoning run would otherwise
     // mutate the live region 337 times (REQ-187).
     const live = container.querySelector('[aria-live="polite"]');
-    expect(live!.textContent).toBe('Thinking');
+    expect(live!.textContent).toBe('Đang suy nghĩ');
   });
 
   it('replaces the Thinking state with the answer once text arrives', async () => {
@@ -178,16 +178,16 @@ describe('assistant pane', () => {
     ]) });
     renderWithProviders(<AssistantPane conversation={conversation} spaceId="s1" />);
 
-    const box = await screen.findByLabelText('Your question');
+    const box = await screen.findByLabelText('Câu hỏi của bạn');
     await userEvent.type(box, 'Did they feel pressure?');
-    await userEvent.click(screen.getByRole('button', { name: 'Ask' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Hỏi' }));
 
     await waitFor(() => {
       expect(screen.getByText('Participants felt pressure.')).toBeInTheDocument();
     });
     // Transient by construction — the reasoning is progress, not product, and
     // nothing persists it.
-    expect(screen.queryByText('Thinking…')).not.toBeInTheDocument();
+    expect(screen.queryByText('Đang suy nghĩ…')).not.toBeInTheDocument();
     expect(screen.queryByText(/Weighing excerpt 0/)).not.toBeInTheDocument();
   });
 
@@ -217,17 +217,17 @@ describe('assistant pane', () => {
     );
     renderWithProviders(<AssistantPane conversation={conversation} spaceId="s1" />);
 
-    const box = await screen.findByLabelText('Your question');
+    const box = await screen.findByLabelText('Câu hỏi của bạn');
     await userEvent.type(box, 'Did they feel pressure?');
-    await userEvent.click(screen.getByRole('button', { name: 'Ask' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Hỏi' }));
 
     // Settling only when the stream *closed* left a finished answer on screen
     // with Ask disabled for as long as titling took — the client half of
     // REQ-232, and the reason moving `done` earlier on the server did nothing
     // on its own.
-    await waitFor(() => expect(screen.getByText(/Sources used:/)).toBeInTheDocument());
-    await userEvent.type(screen.getByLabelText('Your question'), 'next question');
-    expect(screen.getByRole('button', { name: 'Ask' })).toBeEnabled();
+    await waitFor(() => expect(screen.getByText(/Nguồn đã dùng:/)).toBeInTheDocument());
+    await userEvent.type(screen.getByLabelText('Câu hỏi của bạn'), 'next question');
+    expect(screen.getByRole('button', { name: 'Hỏi' })).toBeEnabled();
   });
 
   it('does not offer "Save as note" on the streaming, synthetic answer', async () => {
@@ -238,9 +238,9 @@ describe('assistant pane', () => {
     });
     renderWithProviders(<AssistantPane conversation={conversation} spaceId="s1" />);
 
-    const box = await screen.findByLabelText('Your question');
+    const box = await screen.findByLabelText('Câu hỏi của bạn');
     await userEvent.type(box, 'Did they feel pressure?');
-    await userEvent.click(screen.getByRole('button', { name: 'Ask' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Hỏi' }));
 
     await waitFor(() => {
       expect(screen.getByText('Participants felt pressure.')).toBeInTheDocument();
@@ -250,7 +250,7 @@ describe('assistant pane', () => {
     // message id, so "Save as note" would call a route that cannot exist. The
     // stored answer — covered by "saves an assistant answer as a note" — gets
     // the button; the streamed copy does not.
-    expect(screen.queryByRole('button', { name: /save as note/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /lưu thành ghi chú/i })).not.toBeInTheDocument();
   });
 
   it('hands off to the stored thread once the answer completes', async () => {
@@ -277,9 +277,9 @@ describe('assistant pane', () => {
     );
     renderWithProviders(<AssistantPane conversation={conversation} spaceId="s1" />);
 
-    const box = await screen.findByLabelText('Your question');
+    const box = await screen.findByLabelText('Câu hỏi của bạn');
     await userEvent.type(box, 'Did they feel pressure?');
-    await userEvent.click(screen.getByRole('button', { name: 'Ask' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Hỏi' }));
 
     // The stored answer carries real citation ids, so the markers become usable
     // controls — which the streamed copy's markers only are once ids exist.
@@ -288,7 +288,7 @@ describe('assistant pane', () => {
         screen.getByRole('button', { name: 'Citation 1: Consent Practices, Page 7' }),
       ).toBeEnabled();
     });
-    expect(screen.getByText(/Sources used:/)).toBeInTheDocument();
+    expect(screen.getByText(/Nguồn đã dùng:/)).toBeInTheDocument();
   });
 
   it('keeps the question and offers Retry when the answer fails', async () => {
@@ -299,11 +299,11 @@ describe('assistant pane', () => {
     });
     renderWithProviders(<AssistantPane conversation={conversation} spaceId="s1" />);
 
-    const box = await screen.findByLabelText('Your question');
+    const box = await screen.findByLabelText('Câu hỏi của bạn');
     await userEvent.type(box, 'A question that fails');
-    await userEvent.click(screen.getByRole('button', { name: 'Ask' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Hỏi' }));
 
-    const retry = await screen.findByRole('button', { name: 'Try again' });
+    const retry = await screen.findByRole('button', { name: 'Thử lại' });
     expect(screen.getByText(/still here/)).toBeInTheDocument();
 
     // Retry re-sends the same question — there is no partial answer to restore,
@@ -317,9 +317,9 @@ describe('assistant pane', () => {
     stubApi({ askStatus: 409, askError: 'This space is archived. Restore it to make changes.' });
     renderWithProviders(<AssistantPane conversation={conversation} spaceId="s1" />);
 
-    const box = await screen.findByLabelText('Your question');
+    const box = await screen.findByLabelText('Câu hỏi của bạn');
     await userEvent.type(box, 'Anything?');
-    await userEvent.click(screen.getByRole('button', { name: 'Ask' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Hỏi' }));
 
     expect(await screen.findByText(/This space is archived/)).toBeInTheDocument();
   });
@@ -344,7 +344,7 @@ describe('assistant pane', () => {
     // Says what happened rather than claiming the evidence was weak: an answer
     // citing none of twelve excerpts can equally mean the citation channel broke,
     // which is exactly how one real misconfiguration went unexplained.
-    expect(screen.getByText(/12 excerpts were searched/)).toBeInTheDocument();
+    expect(screen.getByText(/Đã tìm trong 12 đoạn trích/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Citation/ })).not.toBeInTheDocument();
   });
 
@@ -388,7 +388,7 @@ describe('assistant pane', () => {
     expect(asks).toHaveLength(1);
     // Nothing on screen still names it as the initial question; the pane's own
     // composer is empty, ready for a follow-up.
-    expect(screen.getByLabelText('Your question')).toHaveValue('');
+    expect(screen.getByLabelText('Câu hỏi của bạn')).toHaveValue('');
   });
 
   it('drops a handed-over question without asking it when the space is read-only', async () => {
@@ -411,8 +411,8 @@ describe('assistant pane', () => {
     renderWithProviders(<AssistantPane conversation={conversation} spaceId="s1" readOnly />);
 
     await screen.findByText(/Withdrawal felt costly/);
-    expect(screen.queryByLabelText('Your question')).not.toBeInTheDocument();
-    expect(screen.getByText(/Restore it to ask new questions/)).toBeInTheDocument();
+    expect(screen.queryByLabelText('Câu hỏi của bạn')).not.toBeInTheDocument();
+    expect(screen.getByText(/Hãy khôi phục để đặt câu hỏi mới/)).toBeInTheDocument();
   });
 
   it('records feedback on an answer', async () => {
@@ -433,7 +433,7 @@ describe('assistant pane', () => {
     );
     renderWithProviders(<AssistantPane conversation={conversation} spaceId="s1" />);
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Useful' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Hữu ích' }));
     await waitFor(() => expect(calls).toHaveLength(1));
     expect(calls[0]).toContain('useful');
   });
@@ -476,11 +476,11 @@ describe('assistant pane', () => {
     );
     renderWithProviders(<AssistantPane conversation={conversation} spaceId="s1" />);
 
-    const saveBtn = await screen.findByRole('button', { name: /save as note/i });
+    const saveBtn = await screen.findByRole('button', { name: /lưu thành ghi chú/i });
     await userEvent.click(saveBtn);
 
     await waitFor(() => expect(calls).toHaveLength(1));
-    expect(await screen.findByText('Saved to notes')).toBeInTheDocument();
+    expect(await screen.findByText('Đã lưu vào ghi chú')).toBeInTheDocument();
   });
 
   it('surfaces a save failure as an error message instead of swallowing it', async () => {
@@ -504,12 +504,12 @@ describe('assistant pane', () => {
     );
     renderWithProviders(<AssistantPane conversation={conversation} spaceId="s1" />);
 
-    await userEvent.click(await screen.findByRole('button', { name: /save as note/i }));
+    await userEvent.click(await screen.findByRole('button', { name: /lưu thành ghi chú/i }));
 
     // A real failure (archived space, rate limit, network) must reach the user,
     // and the button must not claim the answer was saved.
     expect(await screen.findByText('This space is archived.')).toBeInTheDocument();
-    expect(screen.queryByText('Saved to notes')).not.toBeInTheDocument();
+    expect(screen.queryByText('Đã lưu vào ghi chú')).not.toBeInTheDocument();
   });
 
   it('re-reads the thread rather than erroring when the answer was already saved', async () => {
@@ -546,12 +546,12 @@ describe('assistant pane', () => {
     );
     renderWithProviders(<AssistantPane conversation={conversation} spaceId="s1" />);
 
-    await userEvent.click(await screen.findByRole('button', { name: /save as note/i }));
+    await userEvent.click(await screen.findByRole('button', { name: /lưu thành ghi chú/i }));
 
     await waitFor(() => expect(saveAttempts).toBe(1));
     // Not an error: the answer *is* a note, so the thread is invalidated and the
     // button settles into its saved state from server truth.
-    expect(await screen.findByText('Saved to notes')).toBeInTheDocument();
+    expect(await screen.findByText('Đã lưu vào ghi chú')).toBeInTheDocument();
     expect(
       screen.queryByText('This answer has already been saved as a note.'),
     ).not.toBeInTheDocument();

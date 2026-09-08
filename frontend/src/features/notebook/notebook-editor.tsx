@@ -3,6 +3,7 @@ import { EditorContent, useEditor, type Editor } from '@tiptap/react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import type { Notebook } from '@/lib/api';
+import { useUi } from '@/lib/locale';
 import { type CitationAttrs } from './citation-node';
 import { clearDraft, readDraft, type NotebookDraft } from './draft-storage';
 import { notebookExtensions } from './extensions';
@@ -35,6 +36,9 @@ export const NotebookEditor = forwardRef<
     actions?: React.ReactNode;
   }
 >(function NotebookEditor({ spaceId, notebook, editable, actions }, ref) {
+  const { text } = useUi();
+  const placeholderRef = useRef(text.notebook.placeholder);
+  placeholderRef.current = text.notebook.placeholder;
   const hadFocusRef = useRef(false);
   const [pendingDraft, setPendingDraft] = useState<NotebookDraft | null>(null);
   // Declared before `useEditor` so its callbacks never read it in a TDZ; filled
@@ -42,7 +46,9 @@ export const NotebookEditor = forwardRef<
   const autosaveRef = useRef<ReturnType<typeof useAutosave> | null>(null);
 
   const editor = useEditor({
-    extensions: notebookExtensions(),
+    // The function reads the current language even though Tiptap creates its
+    // extension once. This preserves the editor document during a language switch.
+    extensions: notebookExtensions(() => placeholderRef.current),
     content: notebook.contentRich as object,
     editable,
     // Mounting in jsdom and rendering synchronously keeps the suite deterministic;
@@ -56,7 +62,7 @@ export const NotebookEditor = forwardRef<
           'prose-notebook min-h-[60svh] outline-none font-serif text-base leading-7 text-on-surface',
         role: 'textbox',
         'aria-multiline': 'true',
-        'aria-label': 'Notebook',
+        'aria-label': text.notebook.title,
       },
       handleKeyDown: (_view, event) => {
         const mod = event.metaKey || event.ctrlKey;
@@ -93,6 +99,13 @@ export const NotebookEditor = forwardRef<
 
   const autosave = useAutosave({ spaceId, notebook, enabled: editable, onReplaceDocument: replaceDocument });
   autosaveRef.current = autosave;
+
+  // Recalculate placeholder decorations after the language changes. Its value
+  // is supplied by the stable function above, so no editor re-creation is needed.
+  useEffect(() => {
+    if (!editor) return;
+    editor.view.dispatch(editor.state.tr);
+  }, [editor, text.notebook.placeholder]);
 
   // A draft left by a closed tab. Same base as the server: the server has not
   // moved, the draft is simply newer — applied silently and saved. Older base:
@@ -151,9 +164,10 @@ export const NotebookEditor = forwardRef<
         <Alert>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span>
-              You have unsaved changes from{' '}
-              {pendingDraft.savedAt ? new Date(pendingDraft.savedAt).toLocaleString() : 'an earlier session'}{' '}
-              that were never saved. Restore them, or discard them and keep what is saved.
+              {text.notebook.unsavedDraft.replace(
+                '{time}',
+                pendingDraft.savedAt ? new Date(pendingDraft.savedAt).toLocaleString() : text.notebook.earlierSession,
+              )}
             </span>
             <span className="flex gap-2">
               <Button
@@ -164,7 +178,7 @@ export const NotebookEditor = forwardRef<
                   setPendingDraft(null);
                 }}
               >
-                Restore
+                {text.notebook.restore}
               </Button>
               <Button
                 size="sm"
@@ -174,7 +188,7 @@ export const NotebookEditor = forwardRef<
                   setPendingDraft(null);
                 }}
               >
-                Discard
+                {text.notebook.discard}
               </Button>
             </span>
           </div>

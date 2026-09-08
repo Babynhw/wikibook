@@ -1,32 +1,32 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SourceState } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { useUi } from '@/lib/locale';
 
 /**
  * Icon + text, never color alone (PRD §18). The glyphs are `aria-hidden`: the
  * label is the accessible name, so a screen reader hears "Processing", not
  * "clock Processing".
  */
-const PRESENTATION: Record<SourceState, { label: string; icon: string; className: string }> = {
+const PRESENTATION: Record<SourceState, { icon: string; className: string }> = {
   processing: {
-    label: 'Processing',
     icon: '◐',
     className: 'border-outline-variant bg-surface-container-low text-on-surface-variant',
   },
   ready: {
-    label: 'Ready',
     icon: '✓',
     className: 'border-outline-variant bg-secondary-container text-on-surface',
   },
   failed: {
-    label: 'Failed',
     icon: '!',
     className: 'border-error/30 bg-error-container text-on-error-container',
   },
 };
 
 export function SourceStateBadge({ state }: { state: SourceState }) {
-  const { label, icon, className } = PRESENTATION[state];
+  const { text } = useUi();
+  const { icon, className } = PRESENTATION[state];
+  const label = { processing: text.source.processing, ready: text.source.ready, failed: text.source.failed }[state];
 
   return (
     <span
@@ -50,20 +50,15 @@ export function SourceStateBadge({ state }: { state: SourceState }) {
  * and "it is ready now" is exactly the transition worth announcing.
  */
 export function SourceStateAnnouncer({ state, title }: { state: SourceState; title: string }) {
+  const { text } = useUi();
   const previous = useRef(state);
   const [announcement, setAnnouncement] = useState('');
 
   useEffect(() => {
     if (previous.current === state) return;
     previous.current = state;
-    setAnnouncement(
-      state === 'ready'
-        ? `${title} is ready to use.`
-        : state === 'failed'
-          ? `${title} could not be processed.`
-          : `${title} is processing.`,
-    );
-  }, [state, title]);
+    setAnnouncement((state === 'ready' ? text.source.readyAnnouncement : state === 'failed' ? text.source.failedAnnouncement : text.source.processingAnnouncement).replace('{title}', title));
+  }, [state, title, text.source]);
 
   return (
     <span role="status" aria-live="polite" className="sr-only">

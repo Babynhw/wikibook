@@ -4,6 +4,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Field, TextareaField } from '@/components/ui/field';
+import { useUi } from '@/lib/locale';
 
 interface SpaceDialogProps {
   title: string;
@@ -34,6 +35,7 @@ export function SpaceDialog({
   onSubmit,
   onClose,
 }: SpaceDialogProps) {
+  const { text } = useUi();
   // Controlled: a failed submit keeps what the user typed (PRD §16).
   const [name, setName] = useState(space?.name ?? '');
   const [objective, setObjective] = useState(space?.objective ?? '');
@@ -53,7 +55,7 @@ export function SpaceDialog({
         {apiError ? <Alert>{apiError.message}</Alert> : null}
 
         <Field
-          label="Name"
+          label={text.common.name}
           name="name"
           value={name}
           autoComplete="off"
@@ -61,21 +63,21 @@ export function SpaceDialog({
           onChange={(event) => setName(event.target.value)}
         />
         <TextareaField
-          label="Research objective"
+          label={text.space.objective}
           name="objective"
           rows={3}
           value={objective}
-          hint="Optional. What are you trying to find out?"
+          hint={text.space.objectiveHint}
           error={apiError?.fields.objective}
           onChange={(event) => setObjective(event.target.value)}
         />
 
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
-            Cancel
+            {text.common.cancel}
           </Button>
           <Button type="submit" disabled={pending}>
-            {pending ? 'Saving…' : submitLabel}
+            {pending ? text.common.saving : submitLabel}
           </Button>
         </div>
       </form>

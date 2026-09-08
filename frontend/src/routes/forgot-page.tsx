@@ -6,20 +6,22 @@ import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { AuthLayout } from '@/features/auth/auth-layout';
 import { useForgotPassword } from '@/features/auth/use-auth';
+import { useUi } from '@/lib/locale';
 
 export function ForgotPage() {
   const forgot = useForgotPassword();
+  const { text } = useUi();
   const [email, setEmail] = useState('');
 
   const error = forgot.error instanceof ApiError ? forgot.error : null;
 
   return (
     <AuthLayout
-      title="Reset your password"
-      description="We'll send reset instructions to your email address."
+      title={text.authExtra.resetTitle}
+      description={text.authExtra.resetDescription}
       footer={
         <Link to="/login" className="text-primary underline">
-          Back to sign in
+          {text.authExtra.backToSignIn}
         </Link>
       }
     >
@@ -38,7 +40,7 @@ export function ForgotPage() {
           {error ? <Alert>{error.message}</Alert> : null}
 
           <Field
-            label="Email"
+            label={text.common.email}
             type="email"
             name="email"
             autoComplete="email"
@@ -48,7 +50,7 @@ export function ForgotPage() {
           />
 
           <Button type="submit" disabled={forgot.isPending}>
-            {forgot.isPending ? 'Sending…' : 'Send reset instructions'}
+            {forgot.isPending ? text.authExtra.sending : text.authExtra.sendInstructions}
           </Button>
         </form>
       )}

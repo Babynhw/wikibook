@@ -6,6 +6,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useConvertNoteToSource } from './use-notes';
+import { useUi } from '@/lib/locale';
 
 export function ConvertNoteDialog({
   note,
@@ -16,6 +17,7 @@ export function ConvertNoteDialog({
   onClose: () => void;
   onConverted?: (sourceId: string) => void;
 }) {
+  const { text } = useUi();
   const [title, setTitle] = useState(note.title);
   const convert = useConvertNoteToSource(note.spaceId);
   const error = convert.error instanceof ApiError ? convert.error : null;
@@ -41,14 +43,14 @@ export function ConvertNoteDialog({
   return (
     <Dialog
       open
-      title="Convert Note to Evidence Source"
-      description="Create an independent manual evidence source snapshot from this note. Once processed, it will be eligible for assistant citation and retrieval."
+      title={text.notes.convertTitle}
+      description={text.notes.convertDescription}
       onClose={onClose}
     >
       <form onSubmit={handleSubmit} className="mt-4 space-y-4">
         {error ? <Alert>{error.message}</Alert> : null}
 
-        <Field label="Source Title" error={error?.fields.title}>
+        <Field label={text.notes.sourceTitle} error={error?.fields.title}>
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -59,26 +61,26 @@ export function ConvertNoteDialog({
         </Field>
 
         <p className="text-sm text-on-surface-variant">
-          You can customize the title of the new evidence source.
+          {text.notes.customizeTitle}
         </p>
 
         <div className="rounded-md border border-outline-variant bg-surface-container-low p-3 text-xs text-on-surface-variant space-y-1">
-          <p className="font-medium text-on-surface">Snapshot & Provenance Guarantee (PRD §12):</p>
+          <p className="font-medium text-on-surface">{text.notes.snapshotGuarantee}</p>
           <ul className="list-disc list-inside space-y-0.5">
-            <li>The source and note remain completely independent records after conversion.</li>
+            <li>{text.notes.independentRecords}</li>
             <li>
-              The source will be labeled as originating from{' '}
-              {note.originType === 'saved_answer' ? 'an AI-assisted note' : 'a user note'}.
+              {text.notes.originatingFrom}{' '}
+              {note.originType === 'saved_answer' ? text.notes.aiNote : text.notes.userNoteOrigin}.
             </li>
           </ul>
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>
-            Cancel
+            {text.notes.cancel}
           </Button>
           <Button type="submit" disabled={convert.isPending || !title.trim()}>
-            {convert.isPending ? 'Converting…' : 'Convert to source'}
+            {convert.isPending ? text.notes.converting : text.notes.convertToSource}
           </Button>
         </div>
       </form>

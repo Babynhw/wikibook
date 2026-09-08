@@ -3,6 +3,7 @@ import { ApiError } from '@/lib/api';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useCurrentUser } from './use-auth';
+import { useUi } from '@/lib/locale';
 
 /**
  * Route guard for the authenticated shell.
@@ -15,12 +16,13 @@ import { useCurrentUser } from './use-auth';
  */
 export function RequireAuth() {
   const location = useLocation();
+  const { text } = useUi();
   const { data: user, isPending, isError, error, refetch, isFetching } = useCurrentUser();
 
   if (isPending) {
     return (
       <div className="grid min-h-dvh place-items-center text-sm text-on-surface-variant">
-        <p role="status">Loading your workspace…</p>
+        <p role="status">{text.authExtra.sessionLoading}</p>
       </div>
     );
   }
@@ -32,10 +34,10 @@ export function RequireAuth() {
           <Alert>
             {error instanceof ApiError
               ? error.message
-              : 'We could not load your session. Please try again.'}
+              : text.authExtra.sessionFailed}
           </Alert>
           <Button className="mt-4" disabled={isFetching} onClick={() => void refetch()}>
-            {isFetching ? 'Retrying…' : 'Try again'}
+            {isFetching ? text.common.retrying : text.common.tryAgain}
           </Button>
         </div>
       </div>

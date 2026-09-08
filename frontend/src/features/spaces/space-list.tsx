@@ -9,14 +9,16 @@ import { SpaceDialog } from '@/features/spaces/space-dialog';
 import { useArchiveSpace, useRestoreSpace, useUpdateSpace } from '@/features/spaces/use-spaces';
 import { RelativeTime } from '@/components/relative-time';
 import { RoleBadge } from '@/features/spaces/role-badge';
+import { useUi } from '@/lib/locale';
 
 function RenameDialog({ space, onClose }: { space: Space; onClose: () => void }) {
   const update = useUpdateSpace(space.id);
+  const { text } = useUi();
 
   return (
     <SpaceDialog
-      title="Space details"
-      submitLabel="Save changes"
+      title={text.space.details}
+      submitLabel={text.space.saveChanges}
       space={space}
       pending={update.isPending}
       error={update.error}
@@ -30,25 +32,26 @@ function RenameDialog({ space, onClose }: { space: Space; onClose: () => void })
 
 function ArchiveDialog({ space, onClose }: { space: Space; onClose: () => void }) {
   const archive = useArchiveSpace();
+  const { text } = useUi();
   const error = archive.error instanceof ApiError ? archive.error : null;
 
   return (
     <Dialog
       open
-      title={`Archive “${space.name}”?`}
-      description="Its sources, notes, conversations, and notebook are kept. Restore the space at any time to pick up where you left off."
+      title={text.space.archiveQuestion.replace('{name}', space.name)}
+      description={text.space.archiveDescription}
       onClose={onClose}
     >
       {error ? <Alert className="mt-4">{error.message}</Alert> : null}
       <div className="mt-6 flex justify-end gap-2">
         <Button variant="secondary" onClick={onClose}>
-          Cancel
+          {text.common.cancel}
         </Button>
         <Button
           disabled={archive.isPending}
           onClick={() => archive.mutate(space.id, { onSuccess: onClose })}
         >
-          {archive.isPending ? 'Archiving…' : 'Archive space'}
+          {archive.isPending ? text.common.archiving : text.space.archiveSpace}
         </Button>
       </div>
     </Dialog>
@@ -63,13 +66,14 @@ function SpaceCard({ space, resume }: { space: Space; resume: boolean }) {
   const shared = space.myRole !== 'owner' || space.memberCount > 1;
   const isOwner = space.myRole === 'owner';
   const canEdit = space.myRole !== 'viewer';
+  const { text } = useUi();
 
   return (
     <Card className={resume ? 'border-primary' : undefined}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           {resume ? (
-            <p className="font-mono text-xs tracking-widest text-primary uppercase">Resume</p>
+            <p className="font-mono text-xs tracking-widest text-primary uppercase">{text.space.resume}</p>
           ) : null}
           {/* h2: the page's h1 is the welcome line and nothing sits between (axe heading-order). */}
           <h2 className="truncate text-lg font-semibold text-on-surface">
@@ -88,15 +92,15 @@ function SpaceCard({ space, resume }: { space: Space; resume: boolean }) {
       </div>
 
       <p className="mt-4 font-mono text-xs text-outline">
-        {space.sourceCount} {space.sourceCount === 1 ? 'source' : 'sources'} · {space.noteCount}{' '}
-        {space.noteCount === 1 ? 'note' : 'notes'} · updated <RelativeTime iso={space.updatedAt} />
+        {space.sourceCount} {space.sourceCount === 1 ? text.common.source : text.common.sources} · {space.noteCount}{' '}
+        {space.noteCount === 1 ? text.common.note : text.common.notes} · <RelativeTime iso={space.updatedAt} />
       </p>
       {shared ? (
         <p className="mt-2 flex flex-wrap items-center gap-2 font-mono text-xs text-outline">
           <RoleBadge role={space.myRole} />
           <span>
-            {space.memberCount} {space.memberCount === 1 ? 'member' : 'members'}
-            {isOwner ? '' : ` · owned by ${space.ownerName}`}
+            {space.memberCount} {space.memberCount === 1 ? text.common.member : text.common.members}
+            {isOwner ? '' : ` · ${text.space.ownedBy} ${space.ownerName}`}
           </span>
         </p>
       ) : null}
@@ -105,24 +109,24 @@ function SpaceCard({ space, resume }: { space: Space; resume: boolean }) {
         {archived ? (
           isOwner ? (
             <Button size="sm" disabled={restore.isPending} onClick={() => restore.mutate(space.id)}>
-              {restore.isPending ? 'Restoring…' : 'Restore'}
+              {restore.isPending ? text.common.restoring : text.common.restore}
             </Button>
           ) : (
-            <span className="text-xs text-on-surface-variant">Archived by the owner.</span>
+            <span className="text-xs text-on-surface-variant">{text.space.archivedByOwner}</span>
           )
         ) : (
           <>
             <Link to={`/spaces/${space.id}`} className={buttonVariants({ size: 'sm' })}>
-              Open
+              {text.common.open}
             </Link>
             {canEdit ? (
               <Button size="sm" variant="secondary" onClick={() => setDialog('rename')}>
-                Edit details
+                {text.common.editDetails}
               </Button>
             ) : null}
             {isOwner ? (
               <Button size="sm" variant="ghost" onClick={() => setDialog('archive')}>
-                Archive
+                {text.common.archive}
               </Button>
             ) : null}
           </>

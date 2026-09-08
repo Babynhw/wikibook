@@ -15,6 +15,7 @@ import {
 import { useEditorState, type Editor } from '@tiptap/react';
 import { cn } from '@/lib/utils';
 import { LinkDialog } from './link-dialog';
+import { useUi } from '@/lib/locale';
 
 /**
  * One sticky row of real buttons (PRD §18): each has an accessible name, and
@@ -59,6 +60,7 @@ function ToolbarButton({
 }
 
 export function Toolbar({ editor }: { editor: Editor }) {
+  const { text } = useUi();
   const [linkOpen, setLinkOpen] = useState(false);
   const active = useEditorState({
     editor,
@@ -82,44 +84,44 @@ export function Toolbar({ editor }: { editor: Editor }) {
   return (
     <div
       role="toolbar"
-      aria-label="Formatting"
+      aria-label={text.notebook.formatting}
       className="sticky top-16 z-10 -mx-1 flex flex-wrap items-center gap-0.5 border-b border-outline-variant bg-surface/95 px-1 py-1.5 backdrop-blur"
     >
-      <ToolbarButton label="Heading 1" pressed={active.h1} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
+      <ToolbarButton label={text.notebook.heading.replace('{level}', '1')} pressed={active.h1} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
         <Heading1 className={icon} aria-hidden="true" />
       </ToolbarButton>
-      <ToolbarButton label="Heading 2" pressed={active.h2} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
+      <ToolbarButton label={text.notebook.heading.replace('{level}', '2')} pressed={active.h2} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
         <Heading2 className={icon} aria-hidden="true" />
       </ToolbarButton>
-      <ToolbarButton label="Heading 3" pressed={active.h3} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>
+      <ToolbarButton label={text.notebook.heading.replace('{level}', '3')} pressed={active.h3} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>
         <Heading3 className={icon} aria-hidden="true" />
       </ToolbarButton>
       <span className="mx-1 h-5 w-px bg-outline-variant" aria-hidden="true" />
-      <ToolbarButton label="Bold" pressed={active.bold} onClick={() => editor.chain().focus().toggleBold().run()}>
+      <ToolbarButton label={text.notebook.bold} pressed={active.bold} onClick={() => editor.chain().focus().toggleBold().run()}>
         <Bold className={icon} aria-hidden="true" />
       </ToolbarButton>
-      <ToolbarButton label="Italic" pressed={active.italic} onClick={() => editor.chain().focus().toggleItalic().run()}>
+      <ToolbarButton label={text.notebook.italic} pressed={active.italic} onClick={() => editor.chain().focus().toggleItalic().run()}>
         <Italic className={icon} aria-hidden="true" />
       </ToolbarButton>
       <span className="mx-1 h-5 w-px bg-outline-variant" aria-hidden="true" />
-      <ToolbarButton label="Bulleted list" pressed={active.bullet} onClick={() => editor.chain().focus().toggleBulletList().run()}>
+      <ToolbarButton label={text.notebook.bulletedList} pressed={active.bullet} onClick={() => editor.chain().focus().toggleBulletList().run()}>
         <List className={icon} aria-hidden="true" />
       </ToolbarButton>
-      <ToolbarButton label="Numbered list" pressed={active.ordered} onClick={() => editor.chain().focus().toggleOrderedList().run()}>
+      <ToolbarButton label={text.notebook.numberedList} pressed={active.ordered} onClick={() => editor.chain().focus().toggleOrderedList().run()}>
         <ListOrdered className={icon} aria-hidden="true" />
       </ToolbarButton>
-      <ToolbarButton label="Block quote" pressed={active.quote} onClick={() => editor.chain().focus().toggleBlockquote().run()}>
+      <ToolbarButton label={text.notebook.blockquote} pressed={active.quote} onClick={() => editor.chain().focus().toggleBlockquote().run()}>
         <Quote className={icon} aria-hidden="true" />
       </ToolbarButton>
       <span className="mx-1 h-5 w-px bg-outline-variant" aria-hidden="true" />
-      <ToolbarButton label="Link" pressed={active.link} onClick={() => setLinkOpen(true)}>
+      <ToolbarButton label={text.notebook.link} pressed={active.link} onClick={() => setLinkOpen(true)}>
         <LinkIcon className={icon} aria-hidden="true" />
       </ToolbarButton>
       <span className="mx-1 h-5 w-px bg-outline-variant" aria-hidden="true" />
-      <ToolbarButton label="Undo" disabled={!active.canUndo} onClick={() => editor.chain().focus().undo().run()}>
+      <ToolbarButton label={text.notebook.undo} disabled={!active.canUndo} onClick={() => editor.chain().focus().undo().run()}>
         <Undo2 className={icon} aria-hidden="true" />
       </ToolbarButton>
-      <ToolbarButton label="Redo" disabled={!active.canRedo} onClick={() => editor.chain().focus().redo().run()}>
+      <ToolbarButton label={text.notebook.redo} disabled={!active.canRedo} onClick={() => editor.chain().focus().redo().run()}>
         <Redo2 className={icon} aria-hidden="true" />
       </ToolbarButton>
 

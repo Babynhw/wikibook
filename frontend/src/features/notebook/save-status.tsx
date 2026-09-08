@@ -1,6 +1,7 @@
 import { AlertTriangle, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { SaveState } from './use-autosave';
+import { useUi } from '@/lib/locale';
 
 /**
  * The save state, visible and announced (PRD §13, §18). Icon plus text, never
@@ -22,20 +23,21 @@ export function SaveStatus({
   /** Archived space: there is nothing to save, and saying "Saved" would be a lie. */
   frozen?: boolean;
 }) {
+  const { text } = useUi();
   if (frozen) {
     return (
       <p role="status" aria-live="polite" className="font-mono text-xs text-on-surface-variant">
-        Read-only
+        {text.common.archived}
       </p>
     );
   }
   const word =
     state.kind === 'saving'
-      ? 'Saving…'
+      ? text.notebook.saving
       : state.kind === 'saved'
-        ? 'Saved'
+        ? text.notebook.saved
         : state.kind === 'failed' || state.kind === 'conflict' || state.kind === 'stopped'
-          ? 'Save failed'
+          ? text.notebook.saveFailed
           : '';
   const trouble = state.kind === 'failed' || state.kind === 'conflict' || state.kind === 'stopped';
 
@@ -60,7 +62,7 @@ export function SaveStatus({
         <>
           <span className="text-xs text-on-surface-variant">{state.message}</span>
           <Button variant="secondary" size="sm" onClick={onRetry}>
-            Retry
+            {text.notebook.retry}
           </Button>
         </>
       ) : null}
@@ -75,10 +77,10 @@ export function SaveStatus({
               : state.message}
           </span>
           <Button variant="secondary" size="sm" onClick={onReload}>
-            Reload
+            {text.common.tryAgain}
           </Button>
           <Button variant="ghost" size="sm" onClick={onKeepMine}>
-            Keep mine
+            {text.notebook.save}
           </Button>
         </>
       ) : null}

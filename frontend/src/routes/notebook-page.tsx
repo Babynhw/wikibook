@@ -17,6 +17,7 @@ import { ExportMenu } from '@/features/notebook/export-menu';
 import { NotebookEditor, type NotebookEditorHandle } from '@/features/notebook/notebook-editor';
 import { ResearchPanel } from '@/features/notebook/panel/research-panel';
 import { useNotebook } from '@/features/notebook/use-notebook';
+import { useUi } from '@/lib/locale';
 
 /** Below this the panel is a sheet; at and above it, a side column. */
 const NARROW_QUERY = '(max-width: 1023px)';
@@ -39,6 +40,7 @@ function useNarrow(): boolean {
  * anything the panel does (PRD §13, §19).
  */
 export function NotebookPage() {
+  const { text } = useUi();
   const { spaceId = '' } = useParams<{ spaceId: string }>();
   const space = useSpace(spaceId);
   const notebook = useNotebook(spaceId);
@@ -80,9 +82,7 @@ export function NotebookPage() {
   const presenceLine =
     othersEditing.length === 0
       ? ''
-      : othersEditing.length === 1
-        ? `${othersEditing[0]} is editing`
-        : `${othersEditing.slice(0, -1).join(', ')} and ${othersEditing[othersEditing.length - 1]} are editing`;
+      : text.notebook.isEditing.replace('{names}', othersEditing.join(', '));
 
   const insert = (citation: NoteCitation) => {
     editorRef.current?.insertCitation(citationAttrsFrom(citation));
@@ -100,9 +100,9 @@ export function NotebookPage() {
           <div className="min-w-0 flex-1">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-on-surface">Notebook</h1>
+                <h1 className="text-2xl font-bold tracking-tight text-on-surface">{text.notebook.title}</h1>
                 <p className="mt-1 text-sm text-on-surface-variant">
-                  One continuous draft for this space. It saves as you write.
+                  {text.notebook.description}
                 </p>
                 {/* Announced once per change of the set, not per heartbeat: the text
                     only changes when a name arrives or leaves (REQ-187 pattern). */}
@@ -121,35 +121,34 @@ export function NotebookPage() {
                 ) : (
                   <PanelRightOpen className="size-4" aria-hidden="true" />
                 )}
-                Research panel
+                {text.notebook.researchPanel}
               </Button>
             </div>
 
             {isArchived ? (
-              <Alert>This space is archived. The notebook is read-only until you restore the space; export still works.</Alert>
+              <Alert>{text.notebook.archivedNotice}</Alert>
             ) : permissions.isViewer ? (
-              <Alert variant="info">You can read and export this notebook; editing it needs an editor role.</Alert>
+              <Alert variant="info">{text.notebook.viewerNotice}</Alert>
             ) : permissions.canEdit && stance === 'yield' ? (
               <Alert variant="info" className="flex flex-wrap items-center justify-between gap-3">
                 <span>
-                  {presenceLine || 'Someone else was editing'} this notebook right now. You are reading so you do
-                  not overwrite each other’s work.
+                  {presenceLine || text.notebook.someoneElseEditing} {text.notebook.editingNotice}
                 </span>
                 <Button size="sm" onClick={() => setStance('edit-anyway')}>
-                  Edit anyway
+                  {text.notebook.editAnyway}
                 </Button>
               </Alert>
             ) : null}
 
             {notebook.isPending || space.isPending ? (
-              <div className="space-y-3" aria-busy="true" aria-label="Loading notebook">
+              <div className="space-y-3" aria-busy="true" aria-label={text.notebook.loading}>
                 <Skeleton className="h-8 w-1/2" />
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-5/6" />
               </div>
             ) : notebook.isError || space.isError ? (
               <Alert>
-                {loadError instanceof ApiError ? loadError.message : 'The notebook could not be loaded.'}
+                {loadError instanceof ApiError ? loadError.message : text.notebook.loadFailed}
                 <Button
                   size="sm"
                   variant="secondary"
@@ -159,7 +158,7 @@ export function NotebookPage() {
                     void space.refetch();
                   }}
                 >
-                  Retry
+                  {text.common.retry}
                 </Button>
               </Alert>
             ) : (
@@ -186,8 +185,8 @@ export function NotebookPage() {
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetContent side="right" className="w-full p-0 sm:max-w-md">
               <SheetHeader className="sr-only">
-                <SheetTitle>Research panel</SheetTitle>
-                <SheetDescription>The space's saved notes, to read and cite while drafting.</SheetDescription>
+                <SheetTitle>{text.notebook.researchPanelTitle}</SheetTitle>
+                <SheetDescription>{text.notebook.researchPanelDescription}</SheetDescription>
               </SheetHeader>
               {panel(() => setSheetOpen(false))}
             </SheetContent>

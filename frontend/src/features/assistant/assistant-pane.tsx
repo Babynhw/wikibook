@@ -10,6 +10,7 @@ import { ScopeSelector } from './scope-selector';
 import { pendingUserMessage, useAsk } from './use-ask';
 import { useSmoothedText } from './use-smoothed-text';
 import { useConversation, useFeedback, useSetScope } from './use-conversations';
+import { useUi } from '@/lib/locale';
 
 /**
  * The assistant thread and composer (PRD §9).
@@ -33,6 +34,7 @@ export function AssistantPane({
   canSaveNotes?: boolean;
   onOpenInPane?: (target: { sourceId: string; passageId: string | null; page: number | null }) => void;
 }) {
+  const { text } = useUi();
   const thread = useConversation(conversation.id);
   const sources = useSources(spaceId);
   const setScope = useSetScope(conversation.id, spaceId);
@@ -103,28 +105,27 @@ export function AssistantPane({
       <p role="status" aria-live="polite" className="sr-only">
         {status === 'asking'
           ? pending?.text
-            ? 'Answering'
+            ? text.assistant.answering
             : pending?.thinking
-              ? 'Thinking'
-              : 'Searching your sources'
+              ? text.assistant.thinking
+              : text.assistant.searching
           : status === 'error'
-            ? 'The answer failed'
+            ? text.assistant.failed
             : messages.length > 0
-              ? 'Answer complete'
+              ? text.assistant.complete
               : ''}
       </p>
 
       <div className="flex-1 space-y-4 overflow-y-auto">
         {thread.isPending ? (
-          <p className="text-sm text-on-surface-variant">Loading this conversation…</p>
+          <p className="text-sm text-on-surface-variant">{text.assistant.loading}</p>
         ) : null}
 
         {!thread.isPending && messages.length === 0 && !pending ? (
           <Card>
-            <h2 className="text-base font-semibold text-on-surface">Ask your sources</h2>
+            <h2 className="text-base font-semibold text-on-surface">{text.assistant.askSources}</h2>
             <p className="mt-2 text-sm text-on-surface-variant">
-              Every answer here is built from the sources in this space, with a citation you can open
-              beside each claim. Ask a question to start.
+              {text.assistant.askSourcesDescription}
             </p>
           </Card>
         ) : null}
@@ -180,7 +181,7 @@ export function AssistantPane({
             ) : pending.thinking ? (
               <ThinkingBlock reasoning={pending.thinking} />
             ) : (
-              <p className="text-sm italic text-on-surface-variant">Searching your sources…</p>
+              <p className="text-sm italic text-on-surface-variant">{text.assistant.searching}…</p>
             )}
           </>
         ) : null}
@@ -190,7 +191,7 @@ export function AssistantPane({
             <Alert>{error}</Alert>
             <div className="mt-2">
               <Button variant="secondary" onClick={retry}>
-                Try again
+                {text.assistant.tryAgain}
               </Button>
             </div>
           </div>
@@ -200,11 +201,11 @@ export function AssistantPane({
       </div>
 
       {readOnly ? (
-        <Alert>This space is archived. Restore it to ask new questions.</Alert>
+        <Alert>{text.assistant.archived}</Alert>
       ) : (
         <form onSubmit={submit} className="flex items-end gap-2">
           <label htmlFor="assistant-question" className="sr-only">
-            Your question
+            {text.assistant.questionLabel}
           </label>
           <textarea
             id="assistant-question"
@@ -212,11 +213,11 @@ export function AssistantPane({
             onChange={(event) => setDraft(event.target.value)}
             rows={2}
             maxLength={2000}
-            placeholder="Ask a question about your sources…"
+            placeholder={text.assistant.questionPlaceholder}
             className="flex-1 resize-y rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-2 text-base text-on-surface"
           />
           <Button type="submit" disabled={status === 'asking' || draft.trim() === ''}>
-            {status === 'asking' ? 'Answering…' : 'Ask'}
+            {status === 'asking' ? text.assistant.answeringButton : text.assistant.ask}
           </Button>
         </form>
       )}
@@ -250,11 +251,12 @@ function readInitialQuestion(state: unknown): string | null {
  * still for the rest of the wait, which is the wrong end of a growing text.
  */
 function ThinkingBlock({ reasoning }: { reasoning: string }) {
+  const { text } = useUi();
   return (
     <div className="max-w-[85%] rounded-lg border border-outline-variant px-3 py-2">
       <p className="flex items-center gap-2 text-sm font-medium text-on-surface-variant">
         <span aria-hidden="true" className="size-2 rounded-full bg-primary motion-safe:animate-pulse" />
-        Thinking…
+        {text.assistant.thinking}…
       </p>
       <div className="mt-2 flex max-h-18 flex-col-reverse overflow-hidden border-t border-outline-variant pt-2">
         <p className="text-sm italic text-on-surface-variant">{reasoning}</p>

@@ -19,6 +19,7 @@ import { ApiError, type Note, type NoteCitation } from '@/lib/api';
 import { extractDocText } from '@/features/notes/doc-text';
 import { extractSnippet } from '@/features/notes/note-card';
 import { useNote, useNotes } from '@/features/notes/use-notes';
+import { useUi } from '@/lib/locale';
 
 const SEARCH_DEBOUNCE_MS = 250;
 
@@ -42,6 +43,7 @@ export function ResearchPanel({
   onInsertCitation: (citation: NoteCitation) => void;
   onClose?: () => void;
 }) {
+  const { text } = useUi();
   const [openNoteId, setOpenNoteId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [debounced, setDebounced] = useState('');
@@ -54,14 +56,14 @@ export function ResearchPanel({
   const openNote = useNote(openNoteId);
 
   return (
-    <section aria-label="Research panel" className="flex h-full min-h-0 flex-col">
+    <section aria-label={text.notebook.researchPanel} className="flex h-full min-h-0 flex-col">
       <header className="flex items-center justify-between gap-2 border-b border-outline-variant px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
           {openNoteId ? (
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="Back to notes"
+              aria-label={text.notebook.backToNotes}
               onClick={() => setOpenNoteId(null)}
             >
               <ArrowLeft className="size-4" aria-hidden="true" />
@@ -70,11 +72,11 @@ export function ResearchPanel({
             <BookOpen className="size-4 text-primary" aria-hidden="true" />
           )}
           <h2 className="truncate font-mono text-sm font-semibold text-on-surface">
-            {openNoteId ? 'Note' : 'Saved notes'}
+            {openNoteId ? text.common.note : text.notebook.notes}
           </h2>
         </div>
         {onClose ? (
-          <Button variant="ghost" size="icon-sm" aria-label="Close research panel" onClick={onClose}>
+          <Button variant="ghost" size="icon-sm" aria-label={text.notebook.closeResearch} onClick={onClose}>
             <X className="size-4" aria-hidden="true" />
           </Button>
         ) : null}
@@ -92,7 +94,7 @@ export function ResearchPanel({
               <Alert>
                 {openNote.error instanceof ApiError
                   ? openNote.error.message
-                  : 'That note could not be found. It may have been deleted.'}
+                  : text.reader.notFound}
               </Alert>
             </div>
           ) : (
@@ -116,6 +118,7 @@ export function ResearchPanel({
 }
 
 function OriginBadge({ note }: { note: Note }) {
+  const { text } = useUi();
   const saved = note.originType === 'saved_answer';
   return (
     <span
@@ -124,7 +127,7 @@ function OriginBadge({ note }: { note: Note }) {
       }`}
     >
       {saved ? <Sparkles className="size-3" aria-hidden="true" /> : <FileText className="size-3" aria-hidden="true" />}
-      <span>{saved ? 'Saved Answer' : 'User Note'}</span>
+      <span>{saved ? text.notes.savedAnswer : text.notes.userNote}</span>
     </span>
   );
 }
@@ -148,11 +151,12 @@ function NoteListPane({
   onQuery: (value: string) => void;
   onOpen: (id: string) => void;
 }) {
+  const { text } = useUi();
   return (
     <div className="space-y-3 p-4">
       <div>
         <label htmlFor="panel-notes-search" className="sr-only">
-          Search notes
+          {text.notebook.searchNotes}
         </label>
         <div className="relative">
           <Search
@@ -164,7 +168,7 @@ function NoteListPane({
             type="search"
             value={query}
             onChange={(event) => onQuery(event.target.value)}
-            placeholder="Search notes..."
+            placeholder={text.notebook.searchNotes}
             className="pl-9"
           />
         </div>
@@ -177,13 +181,13 @@ function NoteListPane({
           ))}
         </div>
       ) : error ? (
-        <Alert>{error instanceof ApiError ? error.message : 'Could not load saved notes.'}</Alert>
+        <Alert>{error instanceof ApiError ? error.message : text.common.tryAgain}</Alert>
       ) : !notes || notes.length === 0 ? (
         <p className="rounded-lg border border-dashed border-outline-variant p-4 text-center text-sm text-on-surface-variant">
-          {debounced ? `No notes match “${debounced}”.` : 'No saved notes yet. Save an answer from the assistant, or create one on the notes page.'}
+          {debounced ? text.notes.noMatch.replace('{query}', debounced) : text.notes.noSavedDescription}
         </p>
       ) : (
-        <ul className="space-y-2" aria-label="Notes">
+        <ul className="space-y-2" aria-label={text.notebook.notes}>
           {notes.map((note) => {
             const snippet = extractSnippet(note.contentRich);
             return (
@@ -215,7 +219,7 @@ function NoteListPane({
         to={`/spaces/${spaceId}/notes`}
         className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
       >
-        Manage notes
+        {text.notebook.manageNotes}
         <ExternalLink className="size-3" aria-hidden="true" />
       </Link>
     </div>
@@ -231,6 +235,7 @@ function NoteDetail({
   canInsert: boolean;
   onInsertCitation: (citation: NoteCitation) => void;
 }) {
+  const { text } = useUi();
   const parsed = useMemo(() => extractDocText(note.contentRich), [note.contentRich]);
   return (
     <article className="space-y-4 p-4" aria-label={note.title}>
@@ -241,21 +246,21 @@ function NoteDetail({
 
       {parsed.question ? (
         <div className="rounded-lg border border-outline-variant bg-surface-container-low p-3">
-          <p className="text-xs font-semibold tracking-wider text-on-surface-variant uppercase">Question</p>
+          <p className="text-xs font-semibold tracking-wider text-on-surface-variant uppercase">{text.notebook.question}</p>
           <p className="mt-1 text-sm text-on-surface">{parsed.question}</p>
         </div>
       ) : null}
 
       {/* Selectable prose: "copy text from a note into the notebook manually" (§13) is exactly this. */}
       <div className="text-sm leading-relaxed whitespace-pre-wrap text-on-surface">
-        {parsed.text || <span className="italic text-on-surface-variant">No content</span>}
+        {parsed.text || <span className="italic text-on-surface-variant">{text.notebook.noContent}</span>}
       </div>
 
       {note.citations.length > 0 ? (
         <div className="space-y-2 border-t border-outline-variant pt-4">
           <p className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-on-surface-variant uppercase">
             <BookOpen className="size-3.5" aria-hidden="true" />
-            Citations ({note.citations.length})
+            {text.notebook.citations.replace('{count}', String(note.citations.length))}
           </p>
           <ul className="space-y-2">
             {note.citations.map((citation, index) => {
@@ -272,7 +277,7 @@ function NoteDetail({
                     {citation.stale ? (
                       <span className="inline-flex items-center gap-1 rounded bg-error-container px-2 py-0.5 text-[11px] font-medium text-on-error-container">
                         <AlertTriangle className="size-3" aria-hidden="true" />
-                        Stale
+                        {text.notebook.stale}
                       </span>
                     ) : (
                       <span className="text-on-surface-variant">
@@ -287,15 +292,15 @@ function NoteDetail({
                         size="sm"
                         variant="secondary"
                         className="h-7 px-2 text-xs"
-                        aria-label={`Insert citation: ${citation.sourceTitle}`}
+                        aria-label={`${text.notebook.insertCitation}: ${citation.sourceTitle}`}
                         onClick={() => onInsertCitation(citation)}
                       >
                         <PlusCircle className="size-3.5" aria-hidden="true" />
-                        Insert citation
+                        {text.notebook.insertCitation}
                       </Button>
                     ) : null}
                     <Link to={readerUrl} className="inline-flex items-center gap-1 font-medium text-primary hover:underline">
-                      Open in reader
+                      {text.notebook.openInReader}
                       <ExternalLink className="size-3" aria-hidden="true" />
                     </Link>
                   </div>

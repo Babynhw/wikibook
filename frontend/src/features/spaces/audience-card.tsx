@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { TextareaField } from '@/components/ui/field';
 import { useSetSpaceAudience } from './use-spaces';
 import { useSpaceRole } from './use-space-role';
+import { useUi } from '@/lib/locale';
 
 /**
  * The space's "Audience & style" note (wiki-docs/plan/space-audience-style).
@@ -26,6 +27,7 @@ import { useSpaceRole } from './use-space-role';
  * invitation to fill it in.
  */
 export function AudienceCard({ space }: { space: Space }) {
+  const { text } = useUi();
   const { isOwner, archived } = useSpaceRole(space);
   const editable = isOwner && !archived;
   const setAudience = useSetSpaceAudience(space.id);
@@ -41,12 +43,12 @@ export function AudienceCard({ space }: { space: Space }) {
     if (!space.audienceInstruction) return null;
     return (
       <Card className="mt-6">
-        <h2 className="text-base font-semibold text-on-surface">Audience &amp; style</h2>
+        <h2 className="text-base font-semibold text-on-surface">{text.space.audienceStyle}</h2>
         <p className="mt-2 whitespace-pre-wrap text-sm text-on-surface-variant">
           {space.audienceInstruction}
         </p>
         <p className="mt-2 text-xs text-outline">
-          Set by the owner. It shapes how the assistant writes; it does not limit what you can read.
+          {text.space.setByOwner}
         </p>
       </Card>
     );
@@ -59,7 +61,7 @@ export function AudienceCard({ space }: { space: Space }) {
 
   return (
     <Card className="mt-6">
-      <h2 className="text-base font-semibold text-on-surface">Audience &amp; style</h2>
+      <h2 className="text-base font-semibold text-on-surface">{text.space.audienceStyle}</h2>
       <form
         className="mt-3 flex flex-col gap-3"
         noValidate
@@ -72,11 +74,11 @@ export function AudienceCard({ space }: { space: Space }) {
         {apiError && !apiError.fields.audience ? <Alert>{apiError.message}</Alert> : null}
 
         <TextareaField
-          label="Who are these answers for?"
+          label={text.space.audienceLabel}
           name="audience"
           rows={3}
           value={draft}
-          hint="Optional. Language, reading level, length, tone — for example “Vietnamese, secondary-school level, plain words”."
+          hint={text.space.audienceHint}
           error={apiError?.fields.audience}
           onChange={(event) => setDraft(event.target.value)}
         />
@@ -91,16 +93,13 @@ export function AudienceCard({ space }: { space: Space }) {
             {draft.trim().length} / {max}
           </p>
           <Button type="submit" disabled={setAudience.isPending || overCap || !dirty}>
-            {setAudience.isPending ? 'Saving…' : 'Save'}
+            {setAudience.isPending ? text.common.saving : text.common.save}
           </Button>
         </div>
       </form>
 
       <p className="mt-3 text-xs text-outline">
-        This shapes how the assistant writes. It does not limit what members can read — every member
-        can open every source in this space. It also never relaxes how answers are grounded: claims
-        stay cited, disagreements between sources are still reported, and thin evidence is still
-        called thin.
+        {text.space.audienceHelp}
       </p>
     </Card>
   );

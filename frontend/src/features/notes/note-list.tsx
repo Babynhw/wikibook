@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { Note } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { NoteCard } from './note-card';
+import { useUi } from '@/lib/locale';
 
 export function NoteList({
   notes,
@@ -26,6 +27,7 @@ export function NoteList({
   /** Archived spaces: write actions are withheld (the page banner says read-only). */
   readOnly?: boolean;
 }) {
+  const { text } = useUi();
   if (notes.length === 0) {
     if (searchQuery) {
       return (
@@ -37,14 +39,14 @@ export function NoteList({
             <Search className="size-6" />
           </div>
           <h2 className="mt-4 text-base font-semibold text-on-surface">
-            No notes match “{searchQuery}”
+            {text.notes.noMatch.replace('{query}', searchQuery)}
           </h2>
           <p className="mt-1 text-sm text-on-surface-variant">
-            Try adjusting your search query or clear the filter.
+            {text.notes.adjustSearch}
           </p>
           {onClearSearch ? (
             <Button variant="secondary" size="sm" onClick={onClearSearch} className="mt-4">
-              Clear search
+              {text.notes.clearSearch}
             </Button>
           ) : null}
         </div>
@@ -59,22 +61,21 @@ export function NoteList({
         >
           <FileText className="size-7" />
         </div>
-        <h2 className="mt-4 text-lg font-semibold text-on-surface">No saved notes yet</h2>
+        <h2 className="mt-4 text-lg font-semibold text-on-surface">{text.notes.noSaved}</h2>
         <p className="mt-1 max-w-md text-sm text-on-surface-variant">
-          Save useful answers from the Knowledge Assistant or draft your own private working notes to
-          organize your research.
+          {text.notes.noSavedDescription}
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           {readOnly ? null : (
             <Button onClick={onCreateNote}>
               <Plus className="size-4 mr-1.5" />
-              <span>Create a note</span>
+              <span>{text.notes.createNote}</span>
             </Button>
           )}
 
           <Button variant="secondary" render={<Link to={`/spaces/${spaceId}/assistant`} />}>
             <Sparkles className="size-4 mr-1.5" />
-            <span>Ask Assistant</span>
+            <span>{text.notes.askAssistant}</span>
           </Button>
         </div>
       </div>

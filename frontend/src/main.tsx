@@ -6,6 +6,7 @@ import { createQueryClient } from '@/lib/query-client';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { App } from '@/app';
 import '@/index.css';
+import { LanguageProvider } from '@/lib/locale';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Missing #root element.');
@@ -15,7 +16,9 @@ createRoot(container).render(
     <QueryClientProvider client={createQueryClient()}>
       <ErrorBoundary>
         <BrowserRouter>
-          <App />
+          <LanguageProvider>
+            <App />
+          </LanguageProvider>
         </BrowserRouter>
       </ErrorBoundary>
     </QueryClientProvider>

@@ -5,6 +5,7 @@ import { SpaceRail } from '@/components/space-shell';
 import { useSpace } from '@/features/spaces/use-spaces';
 import { canEditSpace } from '@/features/spaces/use-space-role';
 import { SourceReader, type ReaderLink } from '@/features/reader/source-reader';
+import { useUi } from '@/lib/locale';
 
 /**
  * The reader's route — and the citation contract (PRD §8):
@@ -20,6 +21,7 @@ import { SourceReader, type ReaderLink } from '@/features/reader/source-reader';
  * document header and the bordered viewer with its toolbar — below it.
  */
 export function SourcePage() {
+  const { text } = useUi();
   const { spaceId = '', id = '' } = useParams();
   const [searchParams] = useSearchParams();
   const space = useSpace(spaceId);
@@ -42,7 +44,7 @@ export function SourcePage() {
           so the trail names both, with "Library" being the across-spaces listing.
           `aria-current` marks the space this source belongs to. */}
       <nav
-        aria-label="Breadcrumb"
+        aria-label={text.page.breadcrumb}
         className="mb-6 flex flex-wrap items-center gap-2 text-sm text-on-surface-variant"
       >
         <Link
