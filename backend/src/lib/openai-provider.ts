@@ -1,6 +1,8 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { Output, streamText, generateText } from 'ai';
+import { Output, streamText, generateText, jsonSchema, type JSONSchema7 } from 'ai';
 import { z } from 'zod';
+import { safeParseAsync } from 'zod/v4';
+import { toJSONSchema } from 'zod/v4/core';
 import { env } from '../config.js';
 import {
   AnswerProviderError,
@@ -75,7 +77,34 @@ const capabilities: ProviderCapabilities = {
 const PROVIDER_NAME = 'answers';
 
 /**
- * One answer segment.
+ * How the configured token budget is spelled in the request body on this tier.
+ *
+ * The SDK builds the OpenAI-compatible body with `max_tokens` hardcoded
+ * (`getArgs` maps `maxOutputTokens` to `max_tokens`), which was the reference
+ * API's spelling until its current models started rejecting it outright:
+ *
+ * ```json
+ * {"error": {"message": "Unsupported parameter: 'max_tokens' is not supported
+ *  with this model. Use 'max_completion_tokens' instead.",
+ *            "param": "max_tokens", "code": "unsupported_parameter"}}
+ * ```
+ *
+ * So the spelling is a property of the *endpoint's* dialect — the same drift
+ * `reasoning_effort` belongs to — and, like `ANSWER_EFFORT`, is configured
+ * rather than guessed. The default tracks OpenAI's reference API; a server
+ * that only speaks the older spelling (Ollama) sets `max_tokens`.
+ */
+type MaxTokensParam = 'max_tokens' | 'max_completion_tokens';
+
+/** One answer segment, as the adapter reports it. */
+interface AnswerSegment {
+  text: string;
+  cite: number | null;
+  quote: string | null;
+}
+
+/**
+ * The schema that VALIDATES streamed elements.
  *
  * `cite` carries the enum of exactly the indexes we are sending — that is what
  * guides constrained decoding — but **falls back to "uncited" instead of failing
@@ -84,7 +113,7 @@ const PROVIDER_NAME = 'answers';
  * a sentence is worse than losing a citation, and REQ-155 already owns the
  * decision about whether an index is real (REQ-201).
  */
-function segmentSchema(documentCount: number) {
+function segmentValidator(documentCount: number) {
   const indexes = Array.from({ length: documentCount }, (_, index) => index);
   const cite =
     indexes.length > 0
@@ -102,6 +131,73 @@ function segmentSchema(documentCount: number) {
     cite,
     quote: z.string().nullable().catch(null),
   });
+}
+
+/**
+ * Makes a JSON Schema strict-endpoint-compliant.
+ *
+ * `response_format` under `strict: true` requires every key of `properties` to
+ * appear in `required` (and `additionalProperties: false`). Zod v4's own
+ * conversion drops exactly the fields that carry an input-side default — and
+ * `.catch(null)` serialises as `"default": null` — so the `cite` enum above
+ * would fall out of `required` and a strict endpoint refuses the request before
+ * the model ever sees the schema: `Invalid schema for response_format
+ * 'response': … Missing 'cite'.` (seen against the OpenAI reference API).
+ *
+ * The sent schema and the validator are therefore allowed to differ on
+ * purpose: the JSON Schema is the transport spelling the model is constrained
+ * against, while REQ-201's coercion stays in `segmentValidator`.
+ */
+function toStrictJsonSchema(schema: JSONSchema7): JSONSchema7 {
+  if (schema.type === 'object') {
+    schema.required = Object.keys(schema.properties ?? {});
+    schema.additionalProperties = false;
+  }
+
+  const visit = (def: JSONSchema7 | boolean | Array<JSONSchema7 | boolean> | undefined) => {
+    if (Array.isArray(def)) {
+      for (const item of def) {
+        if (isSchemaNode(item)) toStrictJsonSchema(item);
+      }
+    } else if (isSchemaNode(def)) {
+      toStrictJsonSchema(def);
+    }
+  };
+  const { properties, items, anyOf, allOf, oneOf, not, definitions } = schema;
+  visit(properties ? Object.values(properties) : undefined);
+  visit(items);
+  visit(anyOf);
+  visit(allOf);
+  visit(oneOf);
+  visit(not);
+  visit(definitions ? Object.values(definitions) : undefined);
+  return schema;
+}
+
+/** A JSON Schema node is an object, never the boolean shorthand. */
+function isSchemaNode(def: JSONSchema7 | boolean): def is JSONSchema7 {
+  return typeof def === 'object' && def !== null;
+}
+
+/**
+ * The element schema `Output.array` needs: the JSON Schema the endpoint runs
+ * in `strict` mode, paired with the coercing zod validator above. The two agree
+ * on what an element *is* — the JSON Schema is just the validator's own
+ * conversion, reconciled with strict mode by `toStrictJsonSchema`.
+ */
+function segmentSchema(documentCount: number) {
+  const validator = segmentValidator(documentCount);
+  return jsonSchema<AnswerSegment>(
+    toStrictJsonSchema(toJSONSchema(validator, { target: 'draft-7', io: 'input', reused: 'inline' }) as JSONSchema7),
+    {
+      validate: async (value) => {
+        const result = await safeParseAsync(validator, value);
+        return result.success
+          ? { success: true, value: result.data }
+          : { success: false, error: result.error };
+      },
+    },
+  );
 }
 
 /**
@@ -161,11 +257,7 @@ async function settled<T>(value: PromiseLike<T>): Promise<T | null> {
  * refuses to do (REQ-199).
  */
 /** One entry of a salvaged answer, in the same shape `elementStream` yields. */
-interface SalvagedSegment {
-  text: string;
-  cite: number | null;
-  quote: string | null;
-}
+type SalvagedSegment = AnswerSegment;
 
 function readSegment(value: unknown): SalvagedSegment | null {
   if (typeof value !== 'object' || value === null) return null;
@@ -281,7 +373,16 @@ function rawTextFrom(error: unknown): string | null {
 export function createOpenAiCompatibleProvider(options: {
   baseURL: string;
   apiKey?: string | undefined;
+  /**
+   * The spelling of the token budget in the request body. Defaults to
+   * `env.ANSWER_MAX_TOKENS_PARAM` so `plugins/answers.ts` binds configuration
+   * at the boundary and tests can pin a dialect by constructor option, the
+   * same way they pin `baseURL` and `apiKey`.
+   */
+  maxTokensParam?: MaxTokensParam | undefined;
 }): AnswerProvider {
+  const maxTokensParam = options.maxTokensParam ?? env.ANSWER_MAX_TOKENS_PARAM;
+
   const provider = createOpenAICompatible({
     name: PROVIDER_NAME,
     baseURL: options.baseURL.replace(/\/$/, ''),
@@ -295,6 +396,23 @@ export function createOpenAiCompatibleProvider(options: {
     // is exactly the kind of quiet capability downgrade the tier taxonomy exists to
     // make visible. Found by inspecting the request body, not from the docs.
     supportsStructuredOutputs: true,
+    // The SDK always spells the budget `max_tokens` (`getArgs`), which OpenAI's
+    // current models reject as an unsupported parameter. This is the one hook
+    // that can reshape the body, and the rename is all it does — the value and
+    // every other field pass through untouched. See `MaxTokensParam` for why the
+    // spelling is a configurable property of the endpoint.
+    transformRequestBody: (args) => {
+      // The default dialect is already what the SDK sends; nothing to move.
+      if (maxTokensParam === 'max_tokens') return args;
+      // No budget set means no key to rename (the SDK leaves it absent when
+      // `maxOutputTokens` is undefined).
+      const value = args['max_tokens'];
+      if (value === undefined) return args;
+      const next = { ...args };
+      delete next['max_tokens'];
+      next['max_completion_tokens'] = value;
+      return next;
+    },
   });
 
   /**
@@ -362,7 +480,7 @@ export function createOpenAiCompatibleProvider(options: {
 
       type Merged =
         | { kind: 'thinking'; text: string }
-        | { kind: 'segment'; segment: { text: string; cite: number | null; quote: string | null } };
+        | { kind: 'segment'; segment: AnswerSegment };
 
       let emitted = 0;
       let prose: string | null = null;

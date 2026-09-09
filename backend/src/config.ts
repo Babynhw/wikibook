@@ -61,8 +61,24 @@ const envSchema = z.object({
   //
   // Changing either invalidates every stored vector, exactly like a model swap:
   // re-embed with `pnpm reprocess:sources --all`.
-  EMBEDDING_QUERY_PREFIX: z.string().default('query: '),
+    EMBEDDING_QUERY_PREFIX: z.string().default('query: '),
   EMBEDDING_PASSAGE_PREFIX: z.string().default('passage: '),
+  // Bounded in-process cache of single-input embedding results (a re-asked
+  // question, a follow-up that restates the previous one, the startup warm-up).
+  // Embeddings are deterministic for a fixed model + prefix, so identical inputs
+  // reuse the stored vector and skip a HuggingFace round-trip — the single
+  // biggest variable cost in retrieval (see wiki-docs/specs/assistant/spec.md §19).
+  // 0 disables caching (each call hits the network).
+  EMBEDDING_CACHE_SIZE: z.coerce.number().int().nonnegative().default(128),
+  // Keep the embedding model warm on a timer so HF's serverless placement does
+  // not scale to idle between questions and stall the first real question on a
+  // cold start. Off by default: it spends one tiny inference per interval.
+  EMBEDDING_KEEP_WARM: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  /** Interval for {@link EMBEDDING_KEEP_WARM}. */
+  EMBEDDING_KEEP_WARM_INTERVAL_MS: z.coerce.number().int().positive().default(300_000),
 
   SESSION_COOKIE_NAME: z.string().default('sid'),
   SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 30),
@@ -136,6 +152,14 @@ const envSchema = z.object({
   // Bounds thinking *plus* answer text: a truncated answer arrives as
   // `stop_reason: 'max_tokens'` and is shown with a notice, not as an error.
   ANSWER_MAX_TOKENS: z.coerce.number().int().positive().default(16_000),
+  // The wire parameter that carries `ANSWER_MAX_TOKENS` on the `structured`
+  // tier. OpenAI's current models reject `max_tokens` outright and require
+  // `max_completion_tokens`; older servers (Ollama documents `max_tokens`)
+  // predate the rename. The same dialect drift `reasoning_effort` belongs to,
+  // so — like `ANSWER_EFFORT` — the value is configured, not guessed. The
+  // response-side truncation signal spelling (`stop_reason: 'max_tokens'`,
+  // see `mapFinishReason`) is unrelated and unchanged.
+  ANSWER_MAX_TOKENS_PARAM: z.enum(['max_tokens', 'max_completion_tokens']).default('max_completion_tokens'),
   ANSWER_TIMEOUT_MS: z.coerce.number().int().positive().default(120_000),
   // Engineering knobs on a query and a network call, not §5 product limits, so
   // they live here rather than in AppConfig (design "No new `AppConfig` key").

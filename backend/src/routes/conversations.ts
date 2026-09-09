@@ -1,13 +1,23 @@
-import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { z } from 'zod';
-import { env } from '../config.js';
-import { badRequest, conflict, notFound, serviceUnavailable } from '../lib/errors.js';
-import { assertAccess } from '../middleware/assert-access.js';
-import { retrievableSources } from '../lib/retrieval-scope.js';
-import { retrieve, type RetrievalScope } from '../lib/retrieval.js';
-import { buildHistory, runAnswer, type AnswerOutcome, type ResolvedCitation } from '../lib/answers.js';
-import { AnswerProviderError } from '../lib/answer-provider.js';
-import { ARCHIVED_MESSAGE } from './spaces.js';
+import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
+import { z } from "zod";
+import { env } from "../config.js";
+import {
+  badRequest,
+  conflict,
+  notFound,
+  serviceUnavailable,
+} from "../lib/errors.js";
+import { assertAccess } from "../middleware/assert-access.js";
+import { retrievableSources } from "../lib/retrieval-scope.js";
+import { retrieve, type RetrievalScope } from "../lib/retrieval.js";
+import {
+  buildHistory,
+  runAnswer,
+  type AnswerOutcome,
+  type ResolvedCitation,
+} from "../lib/answers.js";
+import { AnswerProviderError } from "../lib/answer-provider.js";
+import { ARCHIVED_MESSAGE } from "./spaces.js";
 
 /**
  * The citation-grounded assistant (PRD §9).
@@ -23,10 +33,10 @@ import { ARCHIVED_MESSAGE } from './spaces.js';
  */
 
 /** Recorded as the snapshot's model when insufficiency skipped the provider. */
-const NO_MODEL = 'none (no model call)';
+const NO_MODEL = "none (no model call)";
 
 const ASSISTANT_FAILURE =
-  'We could not get an answer just now. Your question is still here — try again.';
+  "We could not get an answer just now. Your question is still here — try again.";
 
 const citationSchema = z.object({
   id: z.string(),
@@ -40,9 +50,9 @@ const citationSchema = z.object({
 
 const messageSchema = z.object({
   id: z.string(),
-  role: z.enum(['user', 'assistant']),
+  role: z.enum(["user", "assistant"]),
   content: z.string(),
-  feedback: z.enum(['useful', 'not_useful']).nullable(),
+  feedback: z.enum(["useful", "not_useful"]).nullable(),
   grounded: z.boolean().nullable(),
   /** How many excerpts were sent for this answer. Null on a user turn. */
   passagesSent: z.number().int().nullable(),
@@ -57,7 +67,7 @@ const conversationSchema = z.object({
   id: z.string(),
   spaceId: z.string(),
   title: z.string(),
-  scopeType: z.enum(['source', 'space']),
+  scopeType: z.enum(["source", "space"]),
   scopeSourceId: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -78,7 +88,7 @@ const conversationListItemSchema = conversationSchema.extend({
 const PREVIEW_LENGTH = 140;
 
 const scopeBodySchema = z.object({
-  scopeType: z.enum(['source', 'space']),
+  scopeType: z.enum(["source", "space"]),
   scopeSourceId: z.string().optional(),
 });
 
@@ -95,7 +105,7 @@ interface ScopeSnapshot {
    * string list does not belong in a snapshot the client reads back.
    */
   [key: string]: string | string[] | number | boolean | null;
-  scopeType: 'source' | 'space';
+  scopeType: "source" | "space";
   scopeSourceId: string | null;
   sourceIds: string[];
   sourceTitles: string[];
@@ -120,14 +130,16 @@ interface ScopeSnapshot {
 }
 
 function readSnapshot(value: unknown): Partial<ScopeSnapshot> {
-  return typeof value === 'object' && value !== null ? (value as Partial<ScopeSnapshot>) : {};
+  return typeof value === "object" && value !== null
+    ? (value as Partial<ScopeSnapshot>)
+    : {};
 }
 
 type ConversationRow = {
   id: string;
   spaceId: string;
   title: string;
-  scopeType: 'source' | 'space';
+  scopeType: "source" | "space";
   scopeSourceId: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -161,8 +173,8 @@ const conversationSelect = {
 const conversationListSelect = {
   ...conversationSelect,
   messages: {
-    where: { role: 'user' as const },
-    orderBy: { createdAt: 'desc' as const },
+    where: { role: "user" as const },
+    orderBy: { createdAt: "desc" as const },
     take: 1,
     select: { content: true },
   },
@@ -176,13 +188,13 @@ type ConversationListRow = ConversationRow & {
 
 function previewOf(content: string | undefined): string | null {
   if (content === undefined) return null;
-  const collapsed = content.trim().replace(/\s+/g, ' ');
-  if (collapsed === '') return null;
+  const collapsed = content.trim().replace(/\s+/g, " ");
+  if (collapsed === "") return null;
   // By code point, not UTF-16 unit: `slice` on the string could end on half of a
   // surrogate pair and ship a broken character as the last one.
   const points = Array.from(collapsed);
   return points.length > PREVIEW_LENGTH
-    ? `${points.slice(0, PREVIEW_LENGTH).join('').trimEnd()}…`
+    ? `${points.slice(0, PREVIEW_LENGTH).join("").trimEnd()}…`
     : collapsed;
 }
 
@@ -196,7 +208,7 @@ function serializeListItem(row: ConversationListRow) {
 
 /** A title that is usable when generation fails, rather than an error (§9). */
 function fallbackTitle(question: string): string {
-  const trimmed = question.trim().replace(/\s+/g, ' ');
+  const trimmed = question.trim().replace(/\s+/g, " ");
   return trimmed.length <= 60 ? trimmed : `${trimmed.slice(0, 57)}…`;
 }
 
@@ -210,22 +222,22 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
    * reload would break the conversation.
    */
   const askRateLimit = {
-    rateLimit: { max: env.ANSWER_RATE_PER_MINUTE, timeWindow: '1 minute' },
+    rateLimit: { max: env.ANSWER_RATE_PER_MINUTE, timeWindow: "1 minute" },
   };
-  const writeRateLimit = { rateLimit: { max: 60, timeWindow: '1 minute' } };
-  const readRateLimit = { rateLimit: { max: 600, timeWindow: '1 minute' } };
+  const writeRateLimit = { rateLimit: { max: 60, timeWindow: "1 minute" } };
+  const readRateLimit = { rateLimit: { max: 600, timeWindow: "1 minute" } };
 
   const ownedSpace = () => ({
     onRequest: [app.requireUser],
-    preHandler: [assertAccess('space', 'id')],
+    preHandler: [assertAccess("space", "id")],
   });
   const ownedConversation = () => ({
     onRequest: [app.requireUser],
-    preHandler: [assertAccess('conversation', 'id')],
+    preHandler: [assertAccess("conversation", "id")],
   });
   const ownedMessage = () => ({
     onRequest: [app.requireUser],
-    preHandler: [assertAccess('message', 'id')],
+    preHandler: [assertAccess("message", "id")],
   });
 
   /** Asking and changing scope are writes, so they are refused in an archived space. */
@@ -235,7 +247,7 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
       select: { archivedAt: true },
     });
     if (!space) throw notFound();
-    if (space.archivedAt) throw conflict(ARCHIVED_MESSAGE, 'space_archived');
+    if (space.archivedAt) throw conflict(ARCHIVED_MESSAGE, "space_archived");
   };
 
   /**
@@ -246,11 +258,15 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
   const resolveScope = async (
     spaceId: string,
     body: z.infer<typeof scopeBodySchema>,
-  ): Promise<{ scopeType: 'source' | 'space'; scopeSourceId: string | null }> => {
-    if (body.scopeType === 'space') return { scopeType: 'space', scopeSourceId: null };
+  ): Promise<{
+    scopeType: "source" | "space";
+    scopeSourceId: string | null;
+  }> => {
+    if (body.scopeType === "space")
+      return { scopeType: "space", scopeSourceId: null };
     if (!body.scopeSourceId) {
-      throw badRequest('Choose which source to ask about.', 'bad_request', {
-        scopeSourceId: 'Choose which source to ask about.',
+      throw badRequest("Choose which source to ask about.", "bad_request", {
+        scopeSourceId: "Choose which source to ask about.",
       });
     }
     const source = await app.prisma.source.findFirst({
@@ -258,17 +274,19 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
       select: { id: true },
     });
     if (!source) throw notFound();
-    return { scopeType: 'source', scopeSourceId: source.id };
+    return { scopeType: "source", scopeSourceId: source.id };
   };
 
   app.get(
-    '/spaces/:id/conversations',
+    "/spaces/:id/conversations",
     {
       ...ownedSpace(),
       config: readRateLimit,
       schema: {
         params: z.object({ id: z.string() }),
-        response: { 200: z.object({ conversations: z.array(conversationListItemSchema) }) },
+        response: {
+          200: z.object({ conversations: z.array(conversationListItemSchema) }),
+        },
       },
     },
     async (request, reply) => {
@@ -277,14 +295,14 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
       const rows = await app.prisma.conversation.findMany({
         where: { spaceId: request.params.id, userId: request.user!.id },
         select: conversationListSelect,
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { updatedAt: "desc" },
       });
       return reply.send({ conversations: rows.map(serializeListItem) });
     },
   );
 
   app.post(
-    '/spaces/:id/conversations',
+    "/spaces/:id/conversations",
     {
       ...ownedSpace(),
       config: writeRateLimit,
@@ -302,16 +320,23 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
       // Titled from the first question once one exists (§9). Until then the
       // conversation still needs a name a list row can show.
       const conversation = await app.prisma.conversation.create({
-        data: { spaceId, userId: request.user!.id, title: 'New conversation', ...scope },
+        data: {
+          spaceId,
+          userId: request.user!.id,
+          title: "New conversation",
+          ...scope,
+        },
         select: conversationSelect,
       });
 
-      return reply.code(201).send({ conversation: serializeConversation(conversation) });
+      return reply
+        .code(201)
+        .send({ conversation: serializeConversation(conversation) });
     },
   );
 
   app.get(
-    '/conversations/:id',
+    "/conversations/:id",
     {
       ...ownedConversation(),
       config: readRateLimit,
@@ -334,7 +359,7 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
 
       const messages = await app.prisma.message.findMany({
         where: { conversationId: conversation.id },
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: "asc" },
         select: {
           id: true,
           role: true,
@@ -343,7 +368,7 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
           scopeSnapshot: true,
           createdAt: true,
           citations: {
-            orderBy: { createdAt: 'asc' },
+            orderBy: { createdAt: "asc" },
             select: {
               id: true,
               sourceId: true,
@@ -370,12 +395,19 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
             role: message.role,
             content: message.content,
             feedback:
-              message.feedback === 'useful' || message.feedback === 'not_useful'
+              message.feedback === "useful" || message.feedback === "not_useful"
                 ? message.feedback
                 : null,
-            grounded: message.role === 'assistant' ? (snapshot.grounded ?? null) : null,
-            passagesSent: message.role === 'assistant' ? (snapshot.passageCount ?? null) : null,
-            sourcesUsed: ids.map((id, index) => ({ id, title: titles[index] ?? 'Source' })),
+            grounded:
+              message.role === "assistant" ? (snapshot.grounded ?? null) : null,
+            passagesSent:
+              message.role === "assistant"
+                ? (snapshot.passageCount ?? null)
+                : null,
+            sourcesUsed: ids.map((id, index) => ({
+              id,
+              title: titles[index] ?? "Source",
+            })),
             citations: message.citations.map((citation, index) => ({
               id: citation.id,
               index: index + 1,
@@ -385,7 +417,9 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
               reference:
                 citation.page !== null
                   ? `Page ${citation.page}`
-                  : (citation.paragraphRef ?? citation.sectionHeading ?? 'Excerpt'),
+                  : (citation.paragraphRef ??
+                    citation.sectionHeading ??
+                    "Excerpt"),
               stale: citation.stale,
             })),
             savedNoteId: message.note?.id ?? null,
@@ -397,7 +431,7 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   app.patch(
-    '/conversations/:id',
+    "/conversations/:id",
     {
       ...ownedConversation(),
       config: writeRateLimit,
@@ -426,13 +460,15 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   app.post(
-    '/messages/:id/feedback',
+    "/messages/:id/feedback",
     {
       ...ownedMessage(),
       config: writeRateLimit,
       schema: {
         params: z.object({ id: z.string() }),
-        body: z.object({ feedback: z.enum(['useful', 'not_useful']).nullable() }),
+        body: z.object({
+          feedback: z.enum(["useful", "not_useful"]).nullable(),
+        }),
         response: { 200: z.object({ ok: z.literal(true) }) },
       },
     },
@@ -444,8 +480,10 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
       if (!message) throw notFound();
       // §9 asks for feedback on an *answer*. Accepting it on the user's own
       // question would store a rating nothing can act on.
-      if (message.role !== 'assistant') {
-        throw badRequest('Feedback applies to an answer, not to your question.');
+      if (message.role !== "assistant") {
+        throw badRequest(
+          "Feedback applies to an answer, not to your question.",
+        );
       }
 
       await app.prisma.message.update({
@@ -464,7 +502,7 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
    * a problem is an `error` event on a stream the client is already reading.
    */
   app.post(
-    '/conversations/:id/messages',
+    "/conversations/:id/messages",
     {
       ...ownedConversation(),
       config: askRateLimit,
@@ -474,8 +512,8 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
           question: z
             .string()
             .trim()
-            .min(1, 'Type a question to ask.')
-            .max(2000, 'Use at most 2000 characters.'),
+            .min(1, "Type a question to ask.")
+            .max(2000, "Use at most 2000 characters."),
         }),
       },
     },
@@ -498,13 +536,14 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
       if (!conversation) throw notFound();
       // Asking creates rows, so it is a write: refused in an archived space with
       // Phase 1's message (REQ-100). Reading the thread stays allowed.
-      if (conversation.space.archivedAt) throw conflict(ARCHIVED_MESSAGE, 'space_archived');
+      if (conversation.space.archivedAt)
+        throw conflict(ARCHIVED_MESSAGE, "space_archived");
 
       const provider = app.answerProvider;
       if (!provider) {
         throw serviceUnavailable(
-          'The assistant is not configured on this server, so it cannot answer yet.',
-          'assistant_unavailable',
+          "The assistant is not configured on this server, so it cannot answer yet.",
+          "assistant_unavailable",
         );
       }
 
@@ -512,25 +551,36 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
       // rather than answered with insufficiency: insufficiency means "we looked
       // and found nothing", and claiming it about a source the user can see is
       // archived would be a lie.
-      let scope: RetrievalScope = { type: 'space', spaceId: conversation.spaceId };
-      if (conversation.scopeType === 'source' && conversation.scopeSourceId) {
+      let scope: RetrievalScope = {
+        type: "space",
+        spaceId: conversation.spaceId,
+      };
+      if (conversation.scopeType === "source" && conversation.scopeSourceId) {
         const usable = await app.prisma.source.findFirst({
-          where: { ...retrievableSources(conversation.spaceId), id: conversation.scopeSourceId },
+          where: {
+            ...retrievableSources(conversation.spaceId),
+            id: conversation.scopeSourceId,
+          },
           select: { id: true },
         });
         if (!usable) {
           throw conflict(
-            'That source is not ready to answer questions — it is archived, still processing, or failed.',
-            'scope_not_retrievable',
+            "That source is not ready to answer questions — it is archived, still processing, or failed.",
+            "scope_not_retrievable",
           );
         }
-        scope = { type: 'source', spaceId: conversation.spaceId, sourceId: usable.id };
+        scope = {
+          type: "source",
+          spaceId: conversation.spaceId,
+          sourceId: usable.id,
+        };
       }
 
       // Rendered into the user turn by the adapter, never into `system`
       // (lib/answer-rules.ts). An unset note leaves the request byte-identical
       // to what this route sent before the field existed.
-      const audience = conversation.space.audienceInstruction?.trim() || undefined;
+      const audience =
+        conversation.space.audienceInstruction?.trim() || undefined;
 
       const isFirstQuestion = conversation._count.messages === 0;
 
@@ -545,7 +595,7 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
       let userMessage;
       try {
         userMessage = await app.prisma.message.create({
-          data: { conversationId, role: 'user', content: question },
+          data: { conversationId, role: "user", content: question },
           select: { id: true, createdAt: true },
         });
       } catch (error) {
@@ -556,11 +606,11 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
       // --- Nothing below this line may throw an AppError. ---
       reply.hijack();
       reply.raw.writeHead(200, {
-        'content-type': 'text/event-stream',
-        'cache-control': 'no-cache',
-        'x-accel-buffering': 'no',
-        'access-control-allow-origin': env.CORS_ORIGIN,
-        'access-control-allow-credentials': 'true',
+        "content-type": "text/event-stream",
+        "cache-control": "no-cache",
+        "x-accel-buffering": "no",
+        "access-control-allow-origin": env.CORS_ORIGIN,
+        "access-control-allow-credentials": "true",
       });
 
       const controller = new AbortController();
@@ -579,14 +629,18 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
         if (!reply.raw.writableEnded) reply.raw.end();
       };
       const dispose = app.events.trackStream(userId, close);
-      reply.raw.on('close', () => {
+      reply.raw.on("close", () => {
         dispose();
         // A closed tab must stop paying for tokens.
         controller.abort();
         cleanup();
       });
 
-      send({ type: 'user_message', id: userMessage.id, createdAt: userMessage.createdAt.toISOString() });
+      send({
+        type: "user_message",
+        id: userMessage.id,
+        createdAt: userMessage.createdAt.toISOString(),
+      });
 
       const startedAt = Date.now();
       let firstTokenAt: number | null = null;
@@ -602,11 +656,11 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
             where: retrievableSources(conversation.spaceId),
           });
           const text =
-            scope.type === 'source'
-              ? 'Nothing in this source matched that question, so there is no evidence here to answer it from.'
+            scope.type === "source"
+              ? "Nothing in this source matched that question, so there is no evidence here to answer it from."
               : readyCount === 0
-                ? 'This space has no sources ready to search yet. Add a source, and I can answer from it.'
-                : 'None of the sources in this space matched that question closely enough to answer it. Try different words, or add a source that covers it.';
+                ? "This space has no sources ready to search yet. Add a source, and I can answer from it."
+                : "None of the sources in this space matched that question closely enough to answer it. Try different words, or add a source that covers it.";
 
           const snapshot: ScopeSnapshot = {
             scopeType: conversation.scopeType,
@@ -628,7 +682,7 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
             const created = await tx.message.create({
               data: {
                 conversationId,
-                role: 'assistant',
+                role: "assistant",
                 content: text,
                 scopeSnapshot: snapshot,
               },
@@ -641,8 +695,13 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
             return created;
           });
 
-          send({ type: 'delta', text });
-          send({ type: 'done', messageId: assistant.id, grounded: false, truncated: false });
+          send({ type: "delta", text });
+          send({
+            type: "done",
+            messageId: assistant.id,
+            grounded: false,
+            truncated: false,
+          });
           app.log.info(
             {
               conversationId,
@@ -651,7 +710,7 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
               insufficient: true,
               retrieveMs: retrievedAt - startedAt,
             },
-            'assistant answered insufficiency without a model call',
+            "assistant answered insufficiency without a model call",
           );
           close();
           return;
@@ -659,7 +718,7 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
 
         const priorTurns = await app.prisma.message.findMany({
           where: { conversationId, id: { not: userMessage.id } },
-          orderBy: { createdAt: 'asc' },
+          orderBy: { createdAt: "asc" },
           select: { role: true, content: true },
         });
         const history = buildHistory(priorTurns, env.MAX_HISTORY_TURNS);
@@ -679,13 +738,13 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
           signal: controller.signal,
         })) {
           if (closed) break;
-          if (event.type === 'thinking') {
+          if (event.type === "thinking") {
             firstTokenAt ??= Date.now();
-            send({ type: 'thinking', text: event.text });
-          } else if (event.type === 'delta') {
+            send({ type: "thinking", text: event.text });
+          } else if (event.type === "delta") {
             firstTokenAt ??= Date.now();
-            send({ type: 'delta', text: event.text });
-          } else if (event.type === 'citation') {
+            send({ type: "delta", text: event.text });
+          } else if (event.type === "citation") {
             citations.push(event.citation);
           } else {
             outcome = event.outcome;
@@ -700,7 +759,10 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
           return;
         }
 
-        if (!outcome) throw new AnswerProviderError('The answer stream produced no outcome.');
+        if (!outcome)
+          throw new AnswerProviderError(
+            "The answer stream produced no outcome.",
+          );
 
         // Sending evidence and getting no citation back is a strong signal that the
         // citation channel is broken rather than that the evidence was weak — a
@@ -718,15 +780,18 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
               model: outcome.servedModel ?? env.ANSWER_MODEL,
               baseUrlConfigured: env.ANSWER_BASE_URL !== undefined,
             },
-            'answer cited nothing despite evidence being sent — if this is every ' +
-              'answer, the provider or proxy is not returning citations (check that ' +
-              'ANSWER_PROVIDER matches the endpoint shape)',
+            "answer cited nothing despite evidence being sent — if this is every " +
+              "answer, the provider or proxy is not returning citations (check that " +
+              "ANSWER_PROVIDER matches the endpoint shape)",
           );
         }
 
         if (outcome.refused) {
-          send({ type: 'error', message: ASSISTANT_FAILURE });
-          app.log.warn({ conversationId, provider: outcome.provider }, 'answer refused by provider');
+          send({ type: "error", message: ASSISTANT_FAILURE });
+          app.log.warn(
+            { conversationId, provider: outcome.provider },
+            "answer refused by provider",
+          );
           close();
           return;
         }
@@ -734,7 +799,9 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
         const snapshot: ScopeSnapshot = {
           scopeType: conversation.scopeType,
           scopeSourceId: conversation.scopeSourceId,
-          sourceIds: [...new Set(outcome.citations.map((citation) => citation.sourceId))],
+          sourceIds: [
+            ...new Set(outcome.citations.map((citation) => citation.sourceId)),
+          ],
           sourceTitles: [],
           passageCount: passages.length,
           grounded: outcome.grounded,
@@ -748,7 +815,9 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
           audience: audience ?? null,
         };
         snapshot.sourceTitles = snapshot.sourceIds.map(
-          (id) => outcome!.citations.find((citation) => citation.sourceId === id)?.sourceTitle ?? 'Source',
+          (id) =>
+            outcome!.citations.find((citation) => citation.sourceId === id)
+              ?.sourceTitle ?? "Source",
         );
 
         // The assistant message and its citations land together or not at all.
@@ -756,7 +825,7 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
           const created = await tx.message.create({
             data: {
               conversationId,
-              role: 'assistant',
+              role: "assistant",
               content: outcome!.text,
               scopeSnapshot: snapshot,
             },
@@ -786,13 +855,15 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
         // Citation ids only exist now, so the markers are sent once the rows do.
         const stored = await app.prisma.citation.findMany({
           where: { messageId: persisted.id },
-          orderBy: { createdAt: 'asc' },
+          orderBy: { createdAt: "asc" },
           select: { id: true, passageId: true },
         });
-        const idByPassage = new Map(stored.map((row) => [row.passageId, row.id]));
+        const idByPassage = new Map(
+          stored.map((row) => [row.passageId, row.id]),
+        );
         for (const citation of citations) {
           send({
-            type: 'citation',
+            type: "citation",
             index: citation.index,
             citationId: idByPassage.get(citation.passageId) ?? null,
             sourceId: citation.sourceId,
@@ -802,10 +873,10 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
           });
         }
         send({
-          type: 'sources',
+          type: "sources",
           sources: snapshot.sourceIds.map((id, index) => ({
             id,
-            title: snapshot.sourceTitles[index] ?? 'Source',
+            title: snapshot.sourceTitles[index] ?? "Source",
           })),
         });
 
@@ -818,7 +889,7 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
         // The client settles on `done` and keeps reading, so a later `title` still
         // refreshes the list (`frontend/src/features/assistant/use-ask.ts`).
         send({
-          type: 'done',
+          type: "done",
           messageId: persisted.id,
           grounded: outcome.grounded,
           truncated: outcome.truncated,
@@ -829,13 +900,19 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
           let title = fallbackTitle(question);
           try {
             const generated = await provider.title(question, controller.signal);
-            const cleaned = generated.trim().replace(/^["']|["']$/g, '');
+            const cleaned = generated.trim().replace(/^["']|["']$/g, "");
             if (cleaned) title = cleaned.slice(0, 80);
           } catch (error) {
-            app.log.warn({ err: error, conversationId }, 'title generation failed; using the question');
+            app.log.warn(
+              { err: error, conversationId },
+              "title generation failed; using the question",
+            );
           }
-          await app.prisma.conversation.update({ where: { id: conversationId }, data: { title } });
-          send({ type: 'title', title });
+          await app.prisma.conversation.update({
+            where: { id: conversationId },
+            data: { title },
+          });
+          send({ type: "title", title });
         }
 
         // Ids, counts, latencies. No question, answer, passage, or quote text (§17).
@@ -858,12 +935,15 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (app) => {
             firstTokenMs: firstTokenAt ? firstTokenAt - startedAt : null,
             totalMs: Date.now() - startedAt,
           },
-          'assistant answered',
+          "assistant answered",
         );
       } catch (error) {
         if (!controller.signal.aborted) {
-          app.log.error({ err: error, conversationId }, 'assistant request failed');
-          send({ type: 'error', message: ASSISTANT_FAILURE });
+          app.log.error(
+            { err: error, conversationId },
+            "assistant request failed",
+          );
+          send({ type: "error", message: ASSISTANT_FAILURE });
         }
       } finally {
         close();

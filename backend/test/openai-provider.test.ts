@@ -87,6 +87,19 @@ describe('openai-compatible provider', () => {
     return found;
   }
 
+  /** Collects every object schema in `value` that has a `properties` map, at any depth. */
+  function objectSchemas(value: unknown, found: Record<string, unknown>[] = []): Record<string, unknown>[] {
+    if (Array.isArray(value)) {
+      for (const item of value) objectSchemas(item, found);
+      return found;
+    }
+    if (typeof value !== 'object' || value === null) return found;
+    const record = value as Record<string, unknown>;
+    if (typeof record.properties === 'object' && record.properties !== null) found.push(record);
+    for (const nested of Object.values(record)) objectSchemas(nested, found);
+    return found;
+  }
+
   it('constrains the answer to exactly the indexes it sent', async () => {
     const { sent } = stub([chunk('{"elements":[]}')]);
     await collect(provider().answer(request, new AbortController().signal));
@@ -101,6 +114,26 @@ describe('openai-compatible provider', () => {
     // the format and silently answers prose.
     expect(body.provider).toEqual({ require_parameters: true });
     expect(body.stream).toBe(true);
+  });
+
+  it('marks every schema field required in the strict response_format', async () => {
+    // A strict endpoint refuses the request with a 400 *before* the model is
+    // ever called when a `properties` key is missing from `required`. Zod v4's
+    // own conversion drops exactly the `.catch()`-defaulted `cite` — the
+    // coercion REQ-201 relies on — so the sent schema is re-derived from the
+    // validator with every key forced into `required`. Pinned by content, like
+    // the enum assertion above: every object schema in the body must list all
+    // of its properties as required, segment and wrapper alike.
+    const { sent } = stub([chunk('{"elements":[]}')]);
+    await collect(provider().answer(request, new AbortController().signal));
+
+    for (const schema of objectSchemas(sent[0]!)) {
+      const properties = schema.properties as Record<string, unknown>;
+      const required = (schema.required as unknown[] | undefined) ?? [];
+      for (const key of Object.keys(properties)) {
+        expect(required, `'${key}' missing from required in ${JSON.stringify(schema)}`).toContain(key);
+      }
+    }
   });
 
   it('fences and numbers the excerpts, and sends history as messages', async () => {
@@ -366,6 +399,52 @@ describe('openai-compatible provider', () => {
     // It had been configured in `.env`, recorded in the snapshot, and sent
     // nowhere — so the model reasoned at its default depth whatever was asked.
     expect(sent[0]!.reasoning_effort).toBe('low');
+  });
+
+  it('sends the token budget as max_completion_tokens, never max_tokens', async () => {
+    // The outage this regression guards: OpenAI's current models reject
+    // `max_tokens` with an `unsupported_parameter` 400, while the SDK
+    // hardcodes that spelling — the adapter's request-body transform is what
+    // puts the budget under the spelling the endpoint accepts.
+    const { sent } = stub([chunk('{"elements":[]}')]);
+    await collect(provider().answer(request, new AbortController().signal));
+
+    expect(sent[0]!.max_completion_tokens).toBe(request.maxTokens);
+    expect(sent[0]!.max_tokens).toBeUndefined();
+  });
+
+  it('keeps max_tokens for an endpoint that only speaks the older dialect', async () => {
+    // Ollama documents `max_tokens` on /v1/chat/completions and nothing newer,
+    // so the dialect is a per-endpoint knob, not a rename done everywhere.
+    const { sent } = stub([chunk('{"elements":[]}')]);
+    const legacy = createOpenAiCompatibleProvider({
+      baseURL: 'http://localhost:11434/v1',
+      apiKey: 'k',
+      maxTokensParam: 'max_tokens',
+    });
+    await collect(legacy.answer(request, new AbortController().signal));
+
+    expect(sent[0]!.max_tokens).toBe(request.maxTokens);
+    expect(sent[0]!.max_completion_tokens).toBeUndefined();
+  });
+
+  it('spells the title budget with the same dialect parameter', async () => {
+    // The non-streaming `generateText` path builds its body through the same
+    // hook, so a gpt-5-class title model on the same endpoint stays fixed too.
+    const sent: Record<string, unknown>[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((_input: unknown, init?: RequestInit) => {
+        sent.push(JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>);
+        return Promise.resolve(
+          new Response('{"choices":[{"message":{"content":"A title"}}]}', { status: 200 }),
+        );
+      }),
+    );
+
+    await provider().title('A question', new AbortController().signal);
+    expect(sent[0]!.max_completion_tokens).toBe(64);
+    expect(sent[0]!.max_tokens).toBeUndefined();
   });
 
   it('bounds a stalled endpoint with the configured timeout', async () => {

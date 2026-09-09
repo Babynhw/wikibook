@@ -1,5 +1,5 @@
 import { buildApp } from './app.js';
-import { assertEmbeddingDimension, EmbeddingError } from './lib/embeddings.js';
+import { assertEmbeddingDimension, embed, EmbeddingError } from './lib/embeddings.js';
 import {
   answerProviderHint,
   embeddingProviderHint,
@@ -80,6 +80,29 @@ try {
     { err: error },
     `embedding service unavailable — could not reach ${env.HF_BASE_URL} for model ` +
       `"${env.EMBEDDING_MODEL}"`,
+  );
+}
+
+// Optionally keep the serverless embedding model warm so a question does not
+// stall on a cold placement. Off by default — it spends one tiny inference per
+// interval — enable with EMBEDDING_KEEP_WARM=true. Uses bypassCache so each tick
+// is a real request and does not poison the query cache with a `warmup` vector.
+if (env.EMBEDDING_KEEP_WARM) {
+  const warm = async () => {
+    try {
+      await embed(['warmup'], 'query', { timeoutMs: 10_000, bypassCache: true });
+    } catch (error) {
+      app.log.warn({ err: error }, 'embedding keep-warm tick failed');
+    }
+  };
+  await warm();
+  const timer = setInterval(warm, env.EMBEDDING_KEEP_WARM_INTERVAL_MS);
+  app.addHook('onClose', async () => {
+    clearInterval(timer);
+  });
+  app.log.info(
+    { intervalMs: env.EMBEDDING_KEEP_WARM_INTERVAL_MS },
+    'embedding keep-warm enabled',
   );
 }
 

@@ -2,6 +2,31 @@
 
 Append-only. Entry format: `## [2026-08-28] update | Phase 7 review fixes
 
+## [2026-09-09] update | Assistant answer latency
+
+Diagnosed the slow-answer path and landed the engineering levers this codebase
+can pull. Each answer still does one HF serverless embedding of the question
+*before* the model is asked, so retrieval (`retrieveMs`) and first-token
+(`firstTokenMs`) — both logged on the `assistant answered` line — are dominated
+by that call's cold-start/network cost; generation latency is the provider
+itself. Two levers:
+
+- `backend/src/lib/embeddings.ts` — in-process cache of single-input embeddings,
+  so a re-asked question or a restated follow-up skips the HF round-trip
+  (`EMBEDDING_CACHE_SIZE`, default 128; 0 disables). Bounded LRU; deterministic
+  per model+prefix, so transparent.
+- `backend/src/index.ts` — optional keep-warm ping
+  (`EMBEDDING_KEEP_WARM=true`, interval in `EMBEDDING_KEEP_WARM_INTERVAL_MS`,
+  default 5 min) so the serverless placement does not scale to idle between
+  questions and stall the first one on a cold start.
+- `README.md` + `backend/.env.example` — document the latency split and the
+  config knobs (faster answer model, dedicated HF Inference Endpoint / local TEI).
+
+Verified: `pnpm --filter backend test` embeddings suite green, including cache
+cases. §19 first-token end-to-end still needs a configured provider and was not
+re-checked here — see `wiki-docs/specs/assistant/spec.md`.
+
+
 Code review of the uncommitted Phase 7 work, no blocker. Fixed: `note.edited`
 joins the `PATCH` transaction (a failed feed write could 500 a committed save);
 `/activity?limit=` clamps as REQ-265 says instead of 400; the "row inserted
@@ -1511,3 +1536,29 @@ spaces, sources, reader, assistant history, notes, notebook, members, invites,
 activity, auth, error states, and accessibility labels now use the dynamic
 Vietnamese/English catalog. Lint and production build pass; legacy test files
 still contain English expected labels and require a separate assertion update.
+
+## [2026-09-09] fix | structured tier sent a schema a strict endpoint refuses
+
+Asking the assistant on the OpenAI reference endpoint failed at the request
+gate, not at the model: the API answered 400 `Invalid schema for response_format
+'response': … Missing 'cite'.` with no model call ever made.
+
+Why: `@ai-sdk/openai-compatible` sends `response_format` with `strict: true`
+(the default), and strict mode requires every `properties` key to appear in
+`required`. Zod v4's own JSON-Schema conversion drops exactly the fields that
+have an input-side default — and `.catch(null)` serialises as `"default":
+null` — so `cite` (and `quote`) fell out of `required` even though they stayed
+in `properties`. The coercion REQ-201 relies on was the very thing breaking
+strict validation.
+
+Fix: the element schema is now deliberately two schemas in
+`openai-provider.ts`. Validation still uses the coercing zod schema (a bad
+`cite` still costs only the citation). The JSON Schema *sent* to the model is
+that validator's own conversion reconciled by `toStrictJsonSchema`, which sets
+`required` to name every property and `additionalProperties: false` at every
+object level — a strict endpoint can run it, while the model is still
+constrained to the same `cite` enum. Regression test in
+`test/openai-provider.test.ts` walks the sent body by content and asserts every
+object schema lists all of its properties as required. `openai-provider` 23,
+`answers` 21, `answer-audience` 8, `anthropic-provider` 10, `config-answers` 4,
+and the backend `tsc --noEmit` lint all pass.

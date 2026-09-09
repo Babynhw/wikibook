@@ -35,6 +35,10 @@ function buildProvider(): AnswerProvider | null {
     return createOpenAiCompatibleProvider({
       baseURL: env.ANSWER_BASE_URL,
       apiKey: answerApiKey,
+      // The wire spelling of the token budget is a property of the endpoint, so
+      // it is bound here — the adapter reads configuration only through its
+      // constructor options (openai-provider.ts `maxTokensParam`).
+      maxTokensParam: env.ANSWER_MAX_TOKENS_PARAM,
     });
   }
   if (!answerApiKey) return null;

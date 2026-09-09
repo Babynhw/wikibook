@@ -1,13 +1,17 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { env } from '../config.js';
+import Anthropic from "@anthropic-ai/sdk";
+import { env } from "../config.js";
 import {
   AnswerProviderError,
   type AnswerEvent,
   type AnswerProvider,
   type AnswerRequest,
   type ProviderCapabilities,
-} from './answer-provider.js';
-import { AUDIENCE_PRECEDENCE_RULE, LANGUAGE_RULE, audienceNoteBlock } from './answer-rules.js';
+} from "./answer-provider.js";
+import {
+  AUDIENCE_PRECEDENCE_RULE,
+  LANGUAGE_RULE,
+  audienceNoteBlock,
+} from "./answer-rules.js";
 
 /**
  * The `native` citation tier: Claude's Citations feature, which all active models
@@ -37,11 +41,11 @@ Rules:
 - ${AUDIENCE_PRECEDENCE_RULE}`;
 
 const capabilities: ProviderCapabilities = {
-  citations: 'native',
+  citations: "native",
   // The API extracts `cited_text` from the document, so it is not model-written.
-  quote: 'extracted',
-  thinking: 'adaptive',
-  effortLevels: ['low', 'medium', 'high'],
+  quote: "extracted",
+  thinking: "adaptive",
+  effortLevels: ["low", "medium", "high"],
 };
 
 /**
@@ -52,7 +56,7 @@ const capabilities: ProviderCapabilities = {
  */
 function tuning(effort: string): Record<string, unknown> {
   return {
-    thinking: { type: 'adaptive', display: 'summarized' },
+    thinking: { type: "adaptive", display: "summarized" },
     output_config: { effort },
   };
 }
@@ -63,12 +67,15 @@ interface CitationLike {
 }
 
 /** Reads a citation payload defensively — a shape change must not crash a stream. */
-function readCitation(raw: unknown): { documentIndex: number; quotedText: string | null } | null {
-  if (typeof raw !== 'object' || raw === null) return null;
+function readCitation(
+  raw: unknown,
+): { documentIndex: number; quotedText: string | null } | null {
+  if (typeof raw !== "object" || raw === null) return null;
   const citation = raw as CitationLike;
   const index = citation.document_index;
-  if (typeof index !== 'number' || !Number.isInteger(index)) return null;
-  const quote = typeof citation.cited_text === 'string' ? citation.cited_text : null;
+  if (typeof index !== "number" || !Number.isInteger(index)) return null;
+  const quote =
+    typeof citation.cited_text === "string" ? citation.cited_text : null;
   return { documentIndex: index, quotedText: quote };
 }
 
@@ -94,15 +101,18 @@ export function createAnthropicProvider(
   });
 
   return {
-    id: 'anthropic',
+    id: "anthropic",
     capabilities,
 
-    async *answer(request: AnswerRequest, signal: AbortSignal): AsyncIterable<AnswerEvent> {
+    async *answer(
+      request: AnswerRequest,
+      signal: AbortSignal,
+    ): AsyncIterable<AnswerEvent> {
       const documents = request.documents.map((document) => ({
-        type: 'document' as const,
+        type: "document" as const,
         source: {
-          type: 'text' as const,
-          media_type: 'text/plain' as const,
+          type: "text" as const,
+          media_type: "text/plain" as const,
           data: document.text,
         },
         title: document.title,
@@ -125,24 +135,26 @@ export function createAnthropicProvider(
             max_tokens: request.maxTokens,
             system: [
               {
-                type: 'text',
+                type: "text",
                 text: SYSTEM_PROMPT,
                 // The documents change every question, so they are past the last
                 // breakpoint by construction; only this prefix is cacheable.
-                cache_control: { type: 'ephemeral' },
+                cache_control: { type: "ephemeral" },
               },
             ],
             messages: [
               ...history,
               {
-                role: 'user',
+                role: "user",
                 content: [
                   // Before the documents, so the model reads who the answer is
                   // for before it reads the evidence — and in the user turn, never
                   // in `system` (answer-rules.ts).
-                  ...(audienceNote ? [{ type: 'text' as const, text: audienceNote }] : []),
+                  ...(audienceNote
+                    ? [{ type: "text" as const, text: audienceNote }]
+                    : []),
                   ...documents,
-                  { type: 'text' as const, text: request.question },
+                  { type: "text" as const, text: request.question },
                 ],
               },
             ],
@@ -151,40 +163,54 @@ export function createAnthropicProvider(
           { signal },
         );
       } catch (error) {
-        throw new AnswerProviderError('Could not start the answer stream.', { cause: error });
+        throw new AnswerProviderError("Could not start the answer stream.", {
+          cause: error,
+        });
       }
 
       try {
         for await (const event of stream) {
-          if (event.type === 'message_start') {
+          if (event.type === "message_start") {
             // A router may map or fail over the model, so report what answered.
             const served = event.message.model;
-            if (typeof served === 'string' && served.length > 0) {
-              yield { type: 'model', id: served };
+            if (typeof served === "string" && served.length > 0) {
+              yield { type: "model", id: served };
             }
-          } else if (event.type === 'content_block_delta') {
-            const delta = event.delta as { type: string; text?: string; thinking?: string; citation?: unknown };
-            if (delta.type === 'text_delta' && typeof delta.text === 'string') {
-              yield { type: 'delta', text: delta.text };
-            } else if (delta.type === 'thinking_delta' && typeof delta.thinking === 'string') {
-              yield { type: 'thinking', text: delta.thinking };
-            } else if (delta.type === 'citations_delta') {
+          } else if (event.type === "content_block_delta") {
+            const delta = event.delta as {
+              type: string;
+              text?: string;
+              thinking?: string;
+              citation?: unknown;
+            };
+            if (delta.type === "text_delta" && typeof delta.text === "string") {
+              yield { type: "delta", text: delta.text };
+            } else if (
+              delta.type === "thinking_delta" &&
+              typeof delta.thinking === "string"
+            ) {
+              yield { type: "thinking", text: delta.thinking };
+            } else if (delta.type === "citations_delta") {
               const citation = readCitation(delta.citation);
               if (citation) {
                 yield {
-                  type: 'citation',
+                  type: "citation",
                   documentIndex: citation.documentIndex,
                   quotedText: citation.quotedText,
                 };
               }
             }
-          } else if (event.type === 'message_delta') {
+          } else if (event.type === "message_delta") {
             const usage = event.usage as
-              | { input_tokens?: number; output_tokens?: number; cache_read_input_tokens?: number }
+              | {
+                  input_tokens?: number;
+                  output_tokens?: number;
+                  cache_read_input_tokens?: number;
+                }
               | undefined;
             if (usage) {
               yield {
-                type: 'usage',
+                type: "usage",
                 inputTokens: usage.input_tokens ?? 0,
                 outputTokens: usage.output_tokens ?? 0,
                 cacheReadTokens: usage.cache_read_input_tokens ?? 0,
@@ -195,21 +221,23 @@ export function createAnthropicProvider(
             // renders it as a §16 assistant failure.
             const reason = event.delta.stop_reason;
             yield {
-              type: 'stop',
+              type: "stop",
               reason:
-                reason === 'refusal'
-                  ? 'refusal'
-                  : reason === 'max_tokens'
-                    ? 'truncated'
-                    : reason === 'end_turn'
-                      ? 'end'
-                      : 'other',
+                reason === "refusal"
+                  ? "refusal"
+                  : reason === "max_tokens"
+                    ? "truncated"
+                    : reason === "end_turn"
+                      ? "end"
+                      : "other",
             };
           }
         }
       } catch (error) {
         if (signal.aborted) return;
-        throw new AnswerProviderError('The answer stream ended unexpectedly.', { cause: error });
+        throw new AnswerProviderError("The answer stream ended unexpectedly.", {
+          cause: error,
+        });
       }
     },
 
@@ -219,18 +247,19 @@ export function createAnthropicProvider(
           model: env.TITLE_MODEL,
           max_tokens: 64,
           system:
-            'Write a short title (at most six words) naming what this research question is about. ' +
-            'Reply with the title alone: no quotes, no punctuation at the end, no preamble.',
-          messages: [{ role: 'user', content: question }],
+            "Write a short title (at most six words) naming what this research question is about. " +
+            "Reply with the title alone: no quotes, no punctuation at the end, no preamble.",
+          messages: [{ role: "user", content: question }],
         },
         { signal },
       );
 
       const text = response.content
-        .flatMap((block) => (block.type === 'text' ? [block.text] : []))
-        .join(' ')
+        .flatMap((block) => (block.type === "text" ? [block.text] : []))
+        .join(" ")
         .trim();
-      if (!text) throw new AnswerProviderError('Title generation returned no text.');
+      if (!text)
+        throw new AnswerProviderError("Title generation returned no text.");
       return text;
     },
   };

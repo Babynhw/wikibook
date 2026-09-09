@@ -1,6 +1,11 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { env } from '../src/config.js';
-import { embed, EmbeddingError } from '../src/lib/embeddings.js';
+import {
+  embed,
+  EmbeddingError,
+  clearEmbeddingCache,
+  setEmbeddingCacheSize,
+} from '../src/lib/embeddings.js';
 
 /**
  * Every branch in `src/lib/embeddings.ts` is an error branch, and `src/index.ts`
@@ -235,3 +240,76 @@ describe('embed', () => {
     expect(error).toBeInstanceOf(EmbeddingError);
   });
 });
+
+/**
+ * The query-embedding cache turns a re-asked question, a retried follow-up, the
+ * startup warm-up, and the dimension check into an in-memory hit instead of a
+ * HuggingFace round-trip — the single biggest variable cost in retrieval. These
+ * tests re-enable it (off by default in the suite, see vitest.config.ts) and
+ * stub `fetch` so they are still network-free.
+ */
+describe('query embedding cache', () => {
+  const vector = (length: number) => Array.from({ length }, () => 0.1);
+  const jsonResponse = (body: unknown) => ({
+    ok: true,
+    status: 200,
+    json: async () => body,
+  });
+
+  beforeEach(() => {
+    setEmbeddingCacheSize(8);
+    clearEmbeddingCache();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    setEmbeddingCacheSize(0);
+  });
+
+  it('serves a repeated single-input question from cache without a second call', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve(jsonResponse([vector(env.EMBEDDING_DIM)])));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const first = await embed(['the same question'], 'query');
+    const second = await embed(['the same question'], 'query');
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // A cache hit is a copy, but content is identical to the fresh vector.
+    expect(second).toEqual(first);
+  });
+
+  it('keeps distinct questions and distinct tasks on separate keys', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve(jsonResponse([vector(env.EMBEDDING_DIM)])));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await embed(['one'], 'query');
+    await embed(['two'], 'query');
+    await embed(['one'], 'passage');
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('never caches a multi-input batch', async () => {
+    const fetchMock = vi.fn(() =>
+      Promise.resolve(jsonResponse([vector(env.EMBEDDING_DIM), vector(env.EMBEDDING_DIM)])),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await embed(['a', 'b'], 'passage');
+    await embed(['a', 'b'], 'passage');
+
+    // Every call is a separate batch; none is short-circuited by the cache.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('bypassCache still hits the service', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve(jsonResponse([vector(env.EMBEDDING_DIM)])));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await embed(['warmup'], 'query', { bypassCache: true });
+    await embed(['warmup'], 'query', { bypassCache: true });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+

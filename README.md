@@ -128,6 +128,40 @@ unique constraint inside `persist.ts`. And the suite loads `backend/.env`, so th
 assistant variables the tests depend on are pinned in `vitest.config.ts` rather than
 read from your own configuration.
 
+## Tuning answer latency
+
+An answer pays two costs, in order: **re-embed the question** against
+HuggingFace's serverless Inference API (retrieval, `retrieveMs` in the log), and
+**generate the answer** from your configured provider (`firstTokenMs` /
+`totalMs`). The server logs one `assistant answered` line per question with the
+split, so look there first:
+
+```
+pnpm --filter backend dev   # then ask a question and watch the backend log
+```
+
+Embedding is the part this codebase can make cheaper:
+
+- **`EMBEDDING_CACHE_SIZE`** (default `128`) — a tiny in-process cache of
+  single-input embeddings. Re-asked questions, restated follow-ups, the startup
+  check, and the keep-warm ping reuse a vector instead of another network
+  round-trip. 0 disables. Safe by default: a given model+prefix is deterministic.
+- **`EMBEDDING_KEEP_WARM=true`** + **`EMBEDDING_KEEP_WARM_INTERVAL_MS`**
+  (default 5 min) — pings the serverless model on a timer so HF does not scale it
+  to idle between questions and stall the first real one on a cold start. Off by
+  default: it spends one tiny inference per interval. Has no effect on a
+  self-hosted TEI/Ollama.
+- The steady-state fix for embedding latency is to move off the shared
+  serverless fleet in the first place: point `HF_BASE_URL` at a dedicated
+  Inference Endpoint or a local TEI (same request shape; see
+  `wiki-docs/plan/huggingface-embeddings/design.md`).
+
+Generation latency is the provider, not this code — §19's first-answer-text is
+~20 s on a reasoning model and is "bounded by the model": pick `ANSWER_MODEL` =
+`claude-haiku-4-5` for speed, drop `ANSWER_EFFORT` (openai-compatible tier) to
+`low`/none, or run a faster local model via `ANSWER_PROVIDER=openai-compatible`
++ `ANSWER_BASE_URL=http://localhost:11434/v1`.
+
 ## Notes for the next phase
 
 - Password reset emails have no provider yet: the reset token is written to the

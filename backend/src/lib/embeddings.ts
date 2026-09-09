@@ -67,6 +67,56 @@ const RETRY_BASE_DELAY_MS = 500;
  */
 const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
 
+/**
+ * In-process cache of single-input query embeddings.
+ *
+ * HuggingFace's serverless Inference API has a real cost on every ask: a network
+ * round-trip that, when the model has scaled to idle, also blocks on cold model
+ * placement (`x-wait-for-model: true`). Re-asked questions, follow-ups that
+ * restate the previous one, the startup warm-up, and the dimension check are all
+ * deterministic for a fixed model + prefix, so they can reuse a stored vector.
+ *
+ * Only single-input calls are cached — passage ingestion batches diverge and
+ * would only make this a memory bound with no hit rate — and it is bounded by an
+ * insertion-order LRU so a long session cannot grow without limit.
+ */
+const cacheKey = (task: EmbeddingTask, text: string): string => `${task}:${text}`;
+
+let cacheLimit = env.EMBEDDING_CACHE_SIZE;
+const cache = new Map<string, number[]>();
+
+/** Override the cache size. Intended for tests; production reads `EMBEDDING_CACHE_SIZE`. */
+export function setEmbeddingCacheSize(size: number): void {
+  cacheLimit = Math.max(0, Math.floor(size));
+}
+
+/** Drop every cached vector. Safe to call from tests or before a model swap. */
+export function clearEmbeddingCache(): void {
+  cache.clear();
+}
+
+function getCached(task: EmbeddingTask, text: string): number[] | undefined {
+  if (cacheLimit <= 0) return undefined;
+  const key = cacheKey(task, text);
+  const hit = cache.get(key);
+  if (hit === undefined) return undefined;
+  cache.delete(key); // refresh recency for the LRU
+  cache.set(key, hit);
+  return hit.slice(); // copy so callers cannot mutate the stored vector
+}
+
+function setCached(task: EmbeddingTask, text: string, vector: number[]): void {
+  if (cacheLimit <= 0) return;
+  const key = cacheKey(task, text);
+  if (cache.has(key)) cache.delete(key);
+  cache.set(key, vector);
+  while (cache.size > cacheLimit) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+}
+
 const prefixFor = (task: EmbeddingTask) =>
   task === 'query' ? env.EMBEDDING_QUERY_PREFIX : env.EMBEDDING_PASSAGE_PREFIX;
 
@@ -105,7 +155,7 @@ function errorDetail(body: unknown): string | undefined {
 export async function embed(
   inputs: string[],
   task: EmbeddingTask,
-  options: { timeoutMs?: number } = {},
+  options: { timeoutMs?: number; /** Skip the cache (e.g. a keep-warm ping). */ bypassCache?: boolean } = {},
 ): Promise<number[][]> {
   if (inputs.length === 0) return [];
 
@@ -113,11 +163,23 @@ export async function embed(
   const payload = prefix ? inputs.map((input) => `${prefix}${input}`) : inputs;
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
+  // Single-input embedding requests — the question on every ask, a warm-up ping,
+  // the startup dimension check — are deterministic for a fixed model + prefix, so
+  // reuse the stored vector instead of paying another HuggingFace round-trip.
+  // Multi-input batches (passage ingestion) are never cached: their inputs diverge
+  // and the cache exists to make re-asked questions cheap, not to buffer batches.
+  if (!options.bypassCache && inputs.length === 1) {
+    const cached = getCached(task, payload[0]!);
+    if (cached) return [cached];
+  }
+
   let lastRetryable: EmbeddingError | undefined;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     try {
-      return check(await request(payload, timeoutMs), inputs.length);
+      const result = check(await request(payload, timeoutMs), inputs.length);
+      if (!options.bypassCache && inputs.length === 1) setCached(task, payload[0]!, result[0]!);
+      return result;
     } catch (error) {
       // Only a 429/5xx or an unreachable host is worth repeating; anything else —
       // a wrong dimension, a rejected token, a body that is not JSON — is settled

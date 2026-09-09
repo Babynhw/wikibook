@@ -19,7 +19,17 @@ export default defineConfig({
       // locally made an adapter test fail with no code change, which is a test
       // depending on ambient config rather than on the thing it asserts.
       ANSWER_PROVIDER_ROUTING: 'true',
+      // The default dialect the adapter computes its body spelling from. Pinned
+      // for the same reason: the regression test asserts the default spelling,
+      // and a local `.env` that set the older one would fail it with no code
+      // change. The older-dialect path is covered by a provider constructed
+      // with the option set explicitly.
+      ANSWER_MAX_TOKENS_PARAM: 'max_completion_tokens',
       ANSWER_PROVIDER: 'anthropic',
+      // Off in tests: the embeddings suite asserts exact `fetch` call counts
+      // against reused inputs (e.g. 'a'), and a cache would serve the second
+      // call from memory.
+      EMBEDDING_CACHE_SIZE: '0',
       // Short enough that the OpenAI-compatible tier's timeout can be asserted by
       // letting it actually fire, rather than by mocking a native `AbortSignal`
       // that `vi.useFakeTimers` does not reach. Every other test answers from a
